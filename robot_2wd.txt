@@ -1,0 +1,22 @@
+robot_2wd
+
+== Robotic messages (2WD) ==
+
+=== Robot Telemetry ===
+MT = 0xB230
+ - get robot telemetry (2WD)
+
+uint8_t - Bamper (flag: 0x1 - first, 0x2 - second)
+int16_t - PWM 1
+int16_t - PWM 2
+uint32_t - US
+uint32_t - IR
+uint32_t - Voltage
+
+=== Robot Drive ===
+MT = 0xB240
+ - set robot PWM (4WD)
+ 
+int16_t - PWM 1
+int16_t - PWM 2
+
