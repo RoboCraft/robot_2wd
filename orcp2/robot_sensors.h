@@ -18,7 +18,8 @@
 // store motor pins
 typedef struct MOTOR
 {
-  int in;     // INVERTOR INPUT (dir)
+  int in1;      // INPUT1
+  int in2;      // INPUT2
   int enable; // ENABLE (pwm)
 } MOTOR;
 
