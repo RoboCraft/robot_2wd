@@ -103,11 +103,11 @@ int main(int argc, char* argv[])
         }
         else if(key == 'a' || key == 'A') {
             printf("[i] left %d\n", speed);
-            orcp.drive_2wd(speed, -speed);
+            orcp.drive_2wd(-speed, speed);
         }
         else if(key == 'd' || key == 'D') {
             printf("[i] right %d\n", speed);
-            orcp.drive_2wd(-speed, speed);
+            orcp.drive_2wd(speed, -speed);
         }
 
         if( res = serial.waitInput(500) ) {
