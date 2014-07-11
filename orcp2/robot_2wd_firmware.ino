@@ -19,7 +19,7 @@
 #include "robot_sensors.h"
 
 //#include <Wire.h>
-//#include <Ultrasonic.h>
+#include <Ultrasonic.h>
 
 #define BAUDRATE 57600
 
@@ -52,7 +52,8 @@ uint8_t message_out[256];
 
 Robot_2WD robot_data;
 
-//Ultrasonic ultrasonic(13, 12); // Trig - 123, Echo - 12
+Ultrasonic ultrasonic(2, 3); // Trig - 2, Echo - 3
+
 //int IRpin[4] = { 0, 1, 2, 3 };
 //int battVoltPin = A7;
 
@@ -182,24 +183,45 @@ int send_telemetry()
     return send_message(ORCP2_MESSAGE_ROBOT_2WD_TELEMETRY, message_out+ORCP2_PACKET_HEADER_LENGTH, len);
 }
 
-#if 0
+// число отсчётов дистанции
+#define DIST_NUMBER 3
 
-void Read_US() 
+void read_US()
 {
-    robot_data.US[0] = ultrasonic.Ranging(CM);       // get distance
+#if 0
+    float dist_average = 0;
+    for(int i=0; i<DIST_NUMBER; i++) {
+        float dist_cm = ultrasonic.Ranging(CM);   // get distance
+        dist_average += dist_cm;
+#if defined(DEBUG)
+        Serial.print(dist_cm);
+        Serial.print(" : ");
+#endif
+        delay(10);
+    }
+    dist_average /= (float)DIST_NUMBER;
+
+#if defined(DEBUG)
+    Serial.println(dist_average);
+#endif
+#endif
+
+    robot_data.US[0] = ultrasonic.Ranging(CM);
     if ((robot_data.US[0] < 1) || (robot_data.US[0] > 350)) {
         robot_data.US[0] = 350;
     }
 }
 
-void Read_IR() 
+#if 0
+
+void read_IR()
 {
     for(int j=0; j<INFRARED_COUNT; j++) {
         robot_data.IR[j] = 65*pow(analogRead(IRpin[j])*0.0048828125, -1.10);
     }
 }
 
-void Read_Voltage() 
+void read_Voltage()
 {
     //$TODO
 
@@ -243,7 +265,7 @@ void motor_drive(int motor_id, int dir, int pwm)
     }
 }
 
-void Read_Bampers() 
+void read_Bampers()
 {
     robot_data.Bamper = 0;
     for (int i=0; i<BAMPER_COUNT; i++) {
@@ -378,13 +400,13 @@ void loop()
 
     if( is_Time(telemetry_time, TELEMETRY_INTERVAL) ) {
 #if 0
-        Read_US();
         Read_IR();
         Read_Voltage();
 #endif
 
 #if defined(DRIVE_BOARD)
-        Read_Bampers();
+        read_US();
+        read_Bampers();
 
         send_telemetry();
 #endif	//#if defined(DRIVE_BOARD)

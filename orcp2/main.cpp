@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
 											robot_data.PWM[0], robot_data.PWM[1],
 											robot_data.US[0], 
 											robot_data.IR[0], 
-											robot_data.Voltage ); 
+                                            robot_data.Voltage );
 									break;
 #endif
 								default:
