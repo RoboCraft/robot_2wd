@@ -175,6 +175,9 @@ int main(int argc, char* argv[])
         }
     }
 
+    printf("[i] stop\n");
+    orcp.motorsWrite(0);
+
     serial.close();
 
 #endif
