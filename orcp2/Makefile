@@ -6,6 +6,7 @@
 
 CC		:= g++
 TARGET	:= robot_2wd
+TARGETS := $(TARGET) keydrive
 
 OBJECTS := orcp2.o serial.o times.o console.o network.o robot_2wd.o robot_sensors.o
 
@@ -15,16 +16,19 @@ LIBRARIES	:= -lpthread -lrt
 
 .PHONY: all clean
 
-all: $(TARGET)
+all: $(TARGETS)
 
 $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS) main.cpp $(LIBRARIES)
+
+keydrive:  $(OBJECTS)
+	$(CC) $(CFLAGS) -o keydrive $(OBJECTS) keydrive.cpp $(LIBRARIES)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c -o $@ $< $(LIBRARIES)
 	
 clean:
-	rm -f *.o $(TARGET)
+	rm -f *.o $(TARGETS)
 	
 rebuild:
 	make clean

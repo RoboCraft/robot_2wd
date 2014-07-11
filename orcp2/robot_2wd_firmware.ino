@@ -30,7 +30,7 @@
 const int TELEMETRY_INTERVAL = 1000 / TELEMETRY_RATE;
 
 // Track the next time we send telemetry
-unsigned long nextTELEMETRY = TELEMETRY_INTERVAL;
+unsigned long telemetry_time = 0;
 
 #define MODE_FIRST_0D       0
 #define MODE_SECOND_0A      1
@@ -63,7 +63,7 @@ int bumperState[] = {0, 0};
 
 MOTOR motors[MOTORS_COUNT] = {
     { 12, 11, 10 },
-    { 7, 8, 9 }
+    { 7,  8,  9 }
 };
 
 static const int FORWARD = HIGH;
@@ -134,19 +134,19 @@ void make_message()
         break;
     case ORCP2_ANALOG_WRITE:
         val16 = message_in[1];
-        val16 += message_in[2]<<8;
+        val16 += (uint16_t)message_in[2] << 8;
         analogWrite(message_in[0], val16);
         break;
         //------------------------------------------------
     case ORCP2_MOTOR_WRITE:
         val8 = message_in[0]; // motor number
         val16 = message_in[1]; // value
-        val16 += message_in[2] << 8;
+        val16 += (uint16_t)message_in[2] << 8;
         motor_drive(val8, val16);
         break;
     case ORCP2_MOTORS_WRITE:
         val16 = message_in[0]; // value
-        val16 += message_in[1]<<8;
+        val16 += (uint16_t)message_in[1] << 8;
         for(i=0; i<MOTORS_COUNT; i++) {
             motor_drive(i, val16);
         }
@@ -155,7 +155,7 @@ void make_message()
         val8=0;
         for(i=0; i<MOTORS_COUNT; i++) {
             val16 = message_in[val8]; // value
-            val16 += message_in[val8+1] << 8;
+            val16 += (uint16_t)message_in[val8+1] << 8;
             motor_drive(i, val16);
             val8 += 2;
         }
@@ -256,6 +256,37 @@ void Read_Bampers()
 
 #endif //#if defined(DRIVE_BOARD)
 
+// based on IsTime() function - David Fowler, AKA uCHobby, http://www.uchobby.com 01/21/2012
+// http://www.uchobby.com/index.php/2012/01/21/replacing-delay-in-arduino-sketches-istime-to-the-rescue/
+//
+
+#define TIMECTL_MAXTICKS  4294967295L
+#define TIMECTL_INIT      0
+
+bool is_Time(unsigned long &timeMark, unsigned long timeInterval)
+{
+    unsigned long timeCurrent;
+    unsigned long timeElapsed;
+
+    bool result = false;
+
+    timeCurrent = millis();
+    if( timeCurrent < timeMark ) { // Rollover detected
+        // elapsed = all the ticks to overflow + all the ticks since overflow
+        timeElapsed = (TIMECTL_MAXTICKS - timeMark) + timeCurrent;
+    }
+    else {
+        timeElapsed = timeCurrent - timeMark;
+    }
+
+    if(timeElapsed >= timeInterval) {
+        timeMark = timeCurrent;
+        result = true;
+    }
+
+    return (result);
+}
+
 void setup() 
 {                
     Serial.begin(BAUDRATE);
@@ -323,7 +354,7 @@ void loop()
             mode_++;
         }
         else if( mode_ == MODE_TOPIC_H ) {  /* top half of topic id */
-            topic_ += data<<8;
+            topic_ += data << 8;
             mode_++;
         }
         else if( mode_ == MODE_SIZE_L ) {   /* bottom half of message size */
@@ -332,7 +363,7 @@ void loop()
             mode_++;
         }
         else if( mode_ == MODE_SIZE_H ) {   /* top half of message size */
-            bytes_ += data<<8;
+            bytes_ += data << 8;
             mode_ = MODE_MESSAGE;
             if(bytes_ == 0)
                 mode_ = MODE_CHECKSUM;
@@ -345,27 +376,17 @@ void loop()
         }
     } // if(Serial.available())
 
-    if (millis() > nextTELEMETRY) { //! change to in_Time function!
-
-#if defined(IMU_BOARD)
-        Read_Gyro(); // Read gyroscope
-        Read_Accel(); // Read accelerometer
-        Read_Magn(); // Read magnetometer
+    if( is_Time(telemetry_time, TELEMETRY_INTERVAL) ) {
+#if 0
         Read_US();
         Read_IR();
         Read_Voltage();
-
-        send_imu();
-        send_sensors_telemetry();
-#endif //#if defined(IMU_BOARD)
+#endif
 
 #if defined(DRIVE_BOARD)
         Read_Bampers();
 
         send_telemetry();
 #endif	//#if defined(DRIVE_BOARD)
-
-        nextTELEMETRY += TELEMETRY_INTERVAL;
     }
-
 }
