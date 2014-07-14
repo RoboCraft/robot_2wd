@@ -1,0 +1,39 @@
+#
+# Makefile
+#
+# http://www.gnu.org/software/make/manual/make.html
+#
+
+CC		:= g++
+
+LIBPPATH 	:= ../lib
+ORCPPATH 	:= ../orcp2
+
+OBJECTS := $(ORCPPATH)/orcp2.o $(ORCPPATH)/robot_2wd.o $(ORCPPATH)/robot_sensors.o $(LIBPPATH)/serial.o $(LIBPPATH)/times.o $(LIBPPATH)/console.o $(LIBPPATH)/network.o
+
+OBJECTSCPP := $(patsubst %.cpp, %.o, $(wildcard *.cpp))
+
+TARGETS	:= $(patsubst %.o, %, $(OBJECTSCPP)) 
+
+CFLAGS		:= -I. -I$(ORCPPATH) -I$(LIBPPATH) -DLINUX=1 
+
+LIBRARIES	:= -lpthread -lrt
+
+.PHONY: all clean
+
+all: $(OBJECTSCPP)
+
+%.o: %.cpp
+	make -C $(LIBPPATH)
+	$(CC) $(CFLAGS) $(OBJECTS) -o $(patsubst %.o, %, $@) $< $(LIBRARIES)
+	
+clean:
+	make -C $(LIBPPATH) clean
+	rm -f *.o $(TARGETS)
+	
+targets:
+	echo "[i] targets: $(TARGETS)"	
+	
+rebuild:
+	make clean
+	make

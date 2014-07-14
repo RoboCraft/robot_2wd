@@ -8,9 +8,11 @@ CC		:= g++
 TARGET	:= robot_2wd
 TARGETS := $(TARGET) keydrive
 
-OBJECTS := orcp2.o serial.o times.o console.o network.o robot_2wd.o robot_sensors.o
+LIBPPATH 	:= ../lib
 
-CFLAGS		:= -I. -DLINUX=1 
+OBJECTS := orcp2.o robot_2wd.o robot_sensors.o $(LIBPPATH)/serial.o $(LIBPPATH)/times.o $(LIBPPATH)/console.o $(LIBPPATH)/network.o
+
+CFLAGS		:= -I. -I$(LIBPPATH) -DLINUX=1 
 
 LIBRARIES	:= -lpthread -lrt
 
@@ -19,15 +21,18 @@ LIBRARIES	:= -lpthread -lrt
 all: $(TARGETS)
 
 $(TARGET): $(OBJECTS)
+	make -C $(LIBPPATH)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS) main.cpp $(LIBRARIES)
 
 keydrive:  $(OBJECTS)
+	make -C $(LIBPPATH)
 	$(CC) $(CFLAGS) -o keydrive $(OBJECTS) keydrive.cpp $(LIBRARIES)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c -o $@ $< $(LIBRARIES)
 	
 clean:
+	make -C $(LIBPPATH) clean
 	rm -f *.o $(TARGETS)
 	
 rebuild:
