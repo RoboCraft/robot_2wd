@@ -101,6 +101,8 @@ int main(int argc, char* argv[])
     char cmd_buf[256]={0};
     int cmd_buf_size = 0;
 
+    bool is_speech_end = true;
+
     while( 1 ) {
 
         int key = console::waitKey(30);
@@ -120,11 +122,12 @@ int main(int argc, char* argv[])
                                    cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
 
 
-                            if(cmd_telemetry_2wd.US < 30) {
+                            if(is_speech_end && cmd_telemetry_2wd.US < 30) {
 
                                 if(speecher.cli_sockfd != SOCKET_ERROR) {
-                                    strncpy(cmd_speech.sig, "speech", CMD_SIG_SIZE);
+                                    is_speech_end = false;
 
+                                    strncpy(cmd_speech.sig, "speech", CMD_SIG_SIZE);
                                     cmd_speech.code = 0;
                                     strncpy(cmd_speech.name, "./snd/dog_growl.wav", sizeof(cmd_speech.name));
 
@@ -154,6 +157,7 @@ int main(int argc, char* argv[])
                         if( !strncmp(cmd_buf, "ackmnt", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_ack) ) {
                             memcpy(&cmd_ack, cmd_buf, sizeof(cmd_ack));
                             printf("[i] Clinet ACK: %d\n", cmd_ack.code);
+                            is_speech_end = true;
                         }
                     }
                 }
