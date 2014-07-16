@@ -12,7 +12,7 @@ LIBPPATH 	:= ../lib
 
 OBJECTS := orcp2.o robot_2wd.o robot_sensors.o $(LIBPPATH)/serial.o $(LIBPPATH)/times.o $(LIBPPATH)/console.o $(LIBPPATH)/network.o
 
-CFLAGS		:= -I. -I$(LIBPPATH) -DLINUX=1 
+CFLAGS		:= -I. -I.. -I$(LIBPPATH) -DLINUX=1 
 
 LIBRARIES	:= -lpthread -lrt
 

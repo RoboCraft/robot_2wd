@@ -10,14 +10,16 @@
 #include <string.h>
 
 robolibrary::Communicator::Communicator():
-    serv_sockfd(SOCKET_ERROR), cli_sockfd(SOCKET_ERROR)
+    serv_sockfd(SOCKET_ERROR), cli_sockfd(SOCKET_ERROR), is_auto_close(true)
 {
 
 }
 
 robolibrary::Communicator::~Communicator()
 {
-    close();
+    if(is_auto_close) {
+        close();
+    }
 }
 
 int robolibrary::Communicator::init(const char* _name, int _type)
@@ -37,7 +39,7 @@ int robolibrary::Communicator::init(const char* _name, int _type)
     if(type == SERVER) {
         serv_sockfd = network_create_UNIX_server(name, &serv_addr);
         if(serv_sockfd == SOCKET_ERROR) {
-            fprintf(stderr, "[!] Error: can't connect to %s!\n", name);
+            fprintf(stderr, "[!] Error: can't create to %s!\n", name);
             return -1;
         }
         clilen = sizeof(struct sockaddr_un);
@@ -60,12 +62,12 @@ int robolibrary::Communicator::init(const char* _name, int _type)
 int robolibrary::Communicator::close()
 {
     if(type == SERVER) {
-        network_close_connection(serv_sockfd);
-        network_close_connection(cli_sockfd);
+        srv_close();
+        cli_close();
         unlink(name);    // remove socket file
     }
     else if(type == CLIENT) {
-        network_close_connection(cli_sockfd);
+        cli_close();
     }
 
     if(name) {
@@ -76,15 +78,36 @@ int robolibrary::Communicator::close()
     return 0;
 }
 
+int robolibrary::Communicator::srv_close()
+{
+    network_close_connection(serv_sockfd);
+    serv_sockfd = SOCKET_ERROR;
+    return 0;
+}
+
+int robolibrary::Communicator::cli_close()
+{
+    if(cli_sockfd == SOCKET_ERROR)
+        return -1;
+
+    network_close_connection(cli_sockfd);
+    cli_sockfd = SOCKET_ERROR;
+    return 0;
+}
+
 int robolibrary::Communicator::connected(int msec)
 {
     if(type == CLIENT)
         return -1;
 
-    if( available(msec) == 0 ) {
+    if( available(msec, serv_sockfd) > 0 ) {
+
+        cli_close();
+
         cli_sockfd = accept(serv_sockfd, (struct sockaddr *)&cli_addr, &clilen);
-        if (cli_sockfd < 0)
+        if (cli_sockfd < 0) {
             printf("[!] Error: accepting!\n");
+        }
         else {
             printf("[i] Client connected...\n");
         }
@@ -93,7 +116,7 @@ int robolibrary::Communicator::connected(int msec)
     return cli_sockfd;
 }
 
-int robolibrary::Communicator::available(int msec)
+int robolibrary::Communicator::available(int msec, int sock)
 {
     fd_set rfds;
     struct timeval tv;
@@ -105,15 +128,16 @@ int robolibrary::Communicator::available(int msec)
         tv.tv_usec -= 1000000;
     }
 
-    int sockfd = get_socket_by_type();
+    int sockfd = sock;
+    if(sockfd == SOCKET_ERROR) {
+        sockfd = get_socket_by_type();
+        if(sockfd == SOCKET_ERROR)
+            return -1;
+    }
 
     FD_ZERO(&rfds);
     FD_SET(sockfd, &rfds);
-    if( select(sockfd+1, &rfds, NULL, NULL, &tv) > 0 ) {
-        return 0;
-    }
-
-    return -1;
+    return select(sockfd+1, &rfds, NULL, NULL, &tv);
 }
 
 int robolibrary::Communicator::read(void *ptr, int count)
@@ -134,7 +158,7 @@ int robolibrary::Communicator::write(const void *ptr, int len)
     if(!ptr || len <= 0)
         return -1;
 
-    int sockfd = get_socket_by_type();
+    int sockfd = cli_sockfd; //get_socket_by_type();
 
     if(sockfd == SOCKET_ERROR)
         return -1;

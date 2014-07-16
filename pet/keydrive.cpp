@@ -5,12 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "orcp2.h"
-#include "serial.h"
-#include "times.h"
+#include "orcp2/orcp2.h"
+#include "lib/serial.h"
+#include "lib/times.h"
 
-#include "robot_2wd.h"
-#include "console.h"
+#include "orcp2/robot_2wd.h"
+#include "lib/console.h"
 
 int main(int argc, char* argv[])
 {

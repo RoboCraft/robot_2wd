@@ -22,9 +22,11 @@ public:
 
     int init(const char* name, int type=SERVER);
     int close();
+    int srv_close();
+    int cli_close();
 
     int connected(int msec);
-    int available(int msec);
+    int available(int msec, int sock=SOCKET_ERROR);
 
     int read(void *ptr, int count);
     int write(const void *ptr, int len);
@@ -33,11 +35,12 @@ public:
 
     int type;
 
-    int serv_sockfd, cli_sockfd, ;
+    int serv_sockfd, cli_sockfd;
     socklen_t servlen, clilen;
     struct sockaddr_un  serv_addr, cli_addr;
 
     char *name;
+    bool is_auto_close;
 };
 
 }; //namespace robolibrary {
