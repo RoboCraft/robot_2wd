@@ -4,6 +4,8 @@
 // http://robocraft.ru
 //
 
+//#define USE_KEYBOARD_INPUT 1
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -121,7 +123,7 @@ int main(int argc, char* argv[])
     int counter = 0;
     int speed = 100;
 
-#if defined(LINUX)
+#if defined(USE_KEYBOARD_INPUT) && defined(LINUX)
     // Use termios to turn off line buffering
     termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -138,8 +140,9 @@ int main(int argc, char* argv[])
     char cmd_buf[128]={0};
     int cmd_buf_size = 0;
 
-    while( 1 ) {
+    while( !terminated ) {
 
+#if defined(USE_KEYBOARD_INPUT)
         int key = console::waitKey(30);
         if(key != 0 ) printf( "[i] Key: %c (%d)\n", key ,key );
         if(key == 27) { //ESC
@@ -166,6 +169,7 @@ int main(int argc, char* argv[])
             printf("[i] right %d\n", speed);
             orcp.drive_2wd(speed, -speed);
         }
+#endif //#if defined(USE_KEYBOARD_INPUT)
 
         if( res = serial.waitInput(500) ) {
             //printf("[i] waitInput: %d\n", res);
@@ -269,7 +273,7 @@ int main(int argc, char* argv[])
             }
         }
 #endif
-    }
+    } // while( !terminated ) {
 
     printf("[i] stop\n");
     orcp.motorsWrite(0);

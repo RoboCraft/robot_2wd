@@ -4,6 +4,8 @@
 // http://robocraft.ru
 //
 
+//#define USE_KEYBOARD_INPUT 1
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -83,7 +85,7 @@ int main(int argc, char* argv[])
 
     int res = 0;
 
-#if defined(LINUX)
+#if defined(USE_KEYBOARD_INPUT) && defined(LINUX)
     // Use termios to turn off line buffering
     termios term;
     tcgetattr(STDIN_FILENO, &term);
@@ -105,13 +107,15 @@ int main(int argc, char* argv[])
     int child_status = -1;
     pid_t child_pid;
 
-    while( 1 ) {
+    while( !terminated ) {
 
+#if defined(USE_KEYBOARD_INPUT)
         int key = console::waitKey(30);
         if(key != 0 ) printf( "[i] Key: %c (%d)\n", key ,key );
         if(key == 27) { //ESC
             break;
         }
+#endif //#if defined(USE_KEYBOARD_INPUT)
 
 #if 1
         if( communicator.cli_sockfd == SOCKET_ERROR && communicator.connected(200) != SOCKET_ERROR ) {
@@ -178,7 +182,7 @@ int main(int argc, char* argv[])
             }
         }
 #endif
-    }
+    }  // while( !terminated ) {
 
     communicator.close();
 

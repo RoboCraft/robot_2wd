@@ -4,6 +4,8 @@
 // http://robocraft.ru
 //
 
+//#define USE_KEYBOARD_INPUT 1
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -72,7 +74,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-#if defined(LINUX)
+#if defined(USE_KEYBOARD_INPUT) && defined(LINUX)
     // Use termios to turn off line buffering
     termios term, cooked;
     tcgetattr(STDIN_FILENO, &term);
@@ -103,13 +105,15 @@ int main(int argc, char* argv[])
 
     bool is_speech_end = true;
 
-    while( 1 ) {
+    while( !terminated ) {
 
+#if defined(USE_KEYBOARD_INPUT)
         int key = console::waitKey(30);
         if(key != 0 ) printf( "[i] Key: %c (%d)\n", key ,key );
         if(key == 27) { //ESC
             break;
         }
+#endif //#if defined(USE_KEYBOARD_INPUT)
 
         if(robodriver.cli_sockfd != SOCKET_ERROR) {
             if(robodriver.available(50, robodriver.cli_sockfd)) {
@@ -122,14 +126,17 @@ int main(int argc, char* argv[])
                                    cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
 
 
-                            if(is_speech_end && cmd_telemetry_2wd.US < 30) {
-
+                            if(is_speech_end && cmd_telemetry_2wd.US < 50) {
                                 if(speecher.cli_sockfd != SOCKET_ERROR) {
                                     is_speech_end = false;
 
                                     strncpy(cmd_speech.sig, "speech", CMD_SIG_SIZE);
                                     cmd_speech.code = 0;
                                     strncpy(cmd_speech.name, "./snd/dog_growl.wav", sizeof(cmd_speech.name));
+
+                                    if(cmd_telemetry_2wd.US < 30) {
+                                        strncpy(cmd_speech.name, "./snd/dog_bark2.wav", sizeof(cmd_speech.name));
+                                    }
 
                                     res = speecher.write(&cmd_speech, sizeof(cmd_speech));
                                     printf( "[i] Send speech command (%d)...\n", res);
@@ -168,11 +175,7 @@ int main(int argc, char* argv[])
             }
         }
 
-    }
-
-#if defined(LINUX)
-    tcsetattr(STDIN_FILENO, TCSANOW, &cooked);
-#endif
+    } //while( !terminated ) {
 
     printf("[i] End.\n");
 
