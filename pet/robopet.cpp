@@ -56,6 +56,12 @@ void register_signal_handlers()
 #endif //#if defined(LINUX)
 }
 
+#define DIST_NUMBER 5
+float us_measurements[DIST_NUMBER] = {0};
+int us_counter = 0;
+float us_distance = 0;
+bool is_us_valid_data = false;
+
 int main(int argc, char* argv[])
 {
     printf("[i] Start...\n");
@@ -125,8 +131,24 @@ int main(int argc, char* argv[])
                             printf("[i] 2WD telemetry: US: %d PWM: [%d %d]\n", cmd_telemetry_2wd.US,
                                    cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
 
+                            if(us_counter < DIST_NUMBER) {
+                                us_measurements[us_counter] = cmd_telemetry_2wd.US;
+                                us_counter++;
+                            }
+                            else {
+                                us_counter = 0;
+                                is_us_valid_data = true;
+                            }
+                            if(is_us_valid_data) {
+                                float summ = 0;
+                                for(int i=0; i<DIST_NUMBER; i++) {
+                                    summ += us_measurements[i];
+                                }
+                                us_distance = summ/DIST_NUMBER;
+                                printf("[i] us_distance: %.2f\n", us_distance);
+                            }
 
-                            if(is_speech_end && cmd_telemetry_2wd.US < 50) {
+                            if(is_speech_end && is_us_valid_data && us_distance < 50) {
                                 if(speecher.cli_sockfd != SOCKET_ERROR) {
                                     is_speech_end = false;
 
@@ -134,7 +156,7 @@ int main(int argc, char* argv[])
                                     cmd_speech.code = 0;
                                     strncpy(cmd_speech.name, "./snd/dog_growl.wav", sizeof(cmd_speech.name));
 
-                                    if(cmd_telemetry_2wd.US < 30) {
+                                    if(us_distance < 30) {
                                         strncpy(cmd_speech.name, "./snd/dog_bark2.wav", sizeof(cmd_speech.name));
                                     }
 
