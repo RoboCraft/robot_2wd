@@ -56,7 +56,7 @@ void register_signal_handlers()
 #endif //#if defined(LINUX)
 }
 
-#define DIST_NUMBER 5
+#define DIST_NUMBER 2
 float us_measurements[DIST_NUMBER] = {0};
 int us_counter = 0;
 float us_distance = 0;
