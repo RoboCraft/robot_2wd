@@ -33,4 +33,22 @@ typedef struct CmdTelemetry2WD {
 
 } CmdTelemetry2WD;
 
+#define PET_EYE_COLORS_COUNT 3
+
+typedef struct PetEyeColorData {
+    int id;
+    int count;
+    int center_x;
+    int center_y;
+} PetEyeColorData;
+
+typedef struct CmdEyeData {
+    char sig[CMD_SIG_SIZE]; // "eyedat"
+
+    int counter;
+    int colors_count;
+    PetEyeColorData colors[PET_EYE_COLORS_COUNT];
+
+} CmdEyeData;
+
 #endif //#ifndef _ROBOPET_COMMANDS_H_

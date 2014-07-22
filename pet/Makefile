@@ -15,6 +15,9 @@ OBJECTSCPP := $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 
 TARGETS	:= $(patsubst %.o, %, $(OBJECTSCPP)) 
 
+OPENCVFLAGS	:= -DUSEOPENCV=1 -I/usr/include/opencv -L/usr/lib -Wl,-rpath,/usr/lib
+OPENCVLIBRARIES := -lopencv_core -lopencv_imgproc -lopencv_highgui
+
 CFLAGS		:= -I. -I.. -I$(ORCPPATH) -I$(LIBPPATH) -DLINUX=1 
 
 LIBRARIES	:= -lpthread -lrt
@@ -23,11 +26,15 @@ LIBRARIES	:= -lpthread -lrt
 
 all: $(OBJECTSCPP)
 
+eye.o: eye.cpp
+	make -C $(LIBPPATH)
+	$(CC) $(CFLAGS) $(OBJECTS) $(OPENCVFLAGS) -o eye $< $(LIBRARIES) $(OPENCVLIBRARIES)
+
 %.o: %.cpp
 	make -C $(LIBPPATH)
 	make -C $(ORCPPATH)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $(patsubst %.o, %, $@) $< $(LIBRARIES)
-	
+		
 clean:
 	make -C $(LIBPPATH) clean
 	make -C $(ORCPPATH) clean
