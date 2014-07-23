@@ -96,8 +96,10 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    roboipc::Communicator communicator;
-    if( communicator.init(DRIVER_2WD_SOCKET_NAME, roboipc::Communicator::SERVER) ) {
+    roboipc::CommunicatorServer communicator;
+    roboipc::CommunicatorClient client;
+
+    if( communicator.init(DRIVER_2WD_SOCKET_NAME) ) {
         fprintf(stderr, "[!] Error: cant create communication: %s!\n", DRIVER_2WD_SOCKET_NAME);
         return -1;
     }
@@ -139,6 +141,8 @@ int main(int argc, char* argv[])
     memset(&cmd_telemetry_2wd, 0, sizeof(cmd_telemetry_2wd));
     char cmd_buf[128]={0};
     int cmd_buf_size = 0;
+
+    serial.discardInput();
 
     while( !terminated ) {
 
@@ -211,7 +215,7 @@ int main(int argc, char* argv[])
                                         robot_data.Voltage );
 
                                 // send telemetry
-                                if(communicator.cli_sockfd != SOCKET_ERROR) {
+                                if(client.sockfd != SOCKET_ERROR) {
                                     strncpy(cmd_telemetry_2wd.sig, "tlmtry", CMD_SIG_SIZE);
                                     cmd_telemetry_2wd.Bamper = robot_data.Bamper;
                                     cmd_telemetry_2wd.pwm[0] = robot_data.PWM[0];
@@ -220,7 +224,7 @@ int main(int argc, char* argv[])
                                     cmd_telemetry_2wd.IR = robot_data.IR[0];
                                     cmd_telemetry_2wd.Voltage = robot_data.Voltage;
 
-                                    res = communicator.write(&cmd_telemetry_2wd, sizeof(cmd_telemetry_2wd));
+                                    res = client.write(&cmd_telemetry_2wd, sizeof(cmd_telemetry_2wd));
                                     printf( "[i] Send robot2WD telemetry (%d)...\n", res);
                                 }
 
@@ -251,25 +255,26 @@ int main(int argc, char* argv[])
         }
 
 #if 1
-        if( communicator.cli_sockfd == SOCKET_ERROR && communicator.connected(50) != SOCKET_ERROR ) {
+        SOCKET sockfd = SOCKET_ERROR;
+        if( (sockfd = communicator.connected(10)) != SOCKET_ERROR ) {
             printf("[i] Client connected...\n");
+            client.close();
+            client.sockfd = sockfd;
         }
-        if(communicator.cli_sockfd != SOCKET_ERROR) {
-            if(communicator.available(50, communicator.cli_sockfd)) {
-                printf("[i] Client data available...\n");
-                if( (cmd_buf_size = communicator.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
-                    if(cmd_buf_size > CMD_SIG_SIZE) {
-                        if( !strncmp(cmd_buf, "drive2", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_drive_2wd) ) {
-                            memcpy(&cmd_drive_2wd, cmd_buf, sizeof(cmd_drive_2wd));
-                            printf("[i] Clinet command 2WD drive: %d %d\n", cmd_drive_2wd.pwm[0], cmd_drive_2wd.pwm[1]);
-                            orcp.drive_2wd(cmd_drive_2wd.pwm[0], cmd_drive_2wd.pwm[1]);
-                        }
+        if(client.available(50) > 0) {
+            printf("[i] Client data available...\n");
+            if( (cmd_buf_size = client.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
+                if(cmd_buf_size > CMD_SIG_SIZE) {
+                    if( !strncmp(cmd_buf, "drive2", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_drive_2wd) ) {
+                        memcpy(&cmd_drive_2wd, cmd_buf, sizeof(cmd_drive_2wd));
+                        printf("[i] Clinet command 2WD drive: %d %d\n", cmd_drive_2wd.pwm[0], cmd_drive_2wd.pwm[1]);
+                        orcp.drive_2wd(cmd_drive_2wd.pwm[0], cmd_drive_2wd.pwm[1]);
                     }
                 }
-                else {
-                    printf("[i] Connection closed...\n");
-                    communicator.cli_close();
-                }
+            }
+            else {
+                printf("[i] Connection closed...\n");
+                client.close();
             }
         }
 #endif

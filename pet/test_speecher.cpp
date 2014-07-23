@@ -18,8 +18,8 @@ int main(int argc, char* argv[])
 {
     printf("[i] Start...\n");
 
-    roboipc::Communicator communicator;
-    if( communicator.init(SPEECHER_SOCKET_NAME, roboipc::Communicator::CLIENT) ) {
+    roboipc::CommunicatorClient speecher;
+    if( speecher.connect(SPEECHER_SOCKET_NAME) ) {
         fprintf(stderr, "[!] Error: cant create communication: %s!\n", SPEECHER_SOCKET_NAME);
         return -1;
     }
@@ -54,33 +54,31 @@ int main(int argc, char* argv[])
         }
         else if(key == 32) { // SPACE
             cmd_speech.code = 0;
-            strncpy(cmd_speech.name, "./snd/dog_woof.wav", sizeof(cmd_speech.name));
+            strncpy(cmd_speech.name, "./snd/dog_bark2.wav", sizeof(cmd_speech.name));
 
-            if(communicator.cli_sockfd != SOCKET_ERROR) {
+            if(speecher.sockfd != SOCKET_ERROR) {
                 strncpy(cmd_speech.sig, "speech", CMD_SIG_SIZE);
 
-                res = communicator.write(&cmd_speech, sizeof(cmd_speech));
+                res = speecher.write(&cmd_speech, sizeof(cmd_speech));
                 printf( "[i] Send speech command (%d)...\n", res);
                 printf( "[i] Data: %d %s\n", cmd_speech.code, cmd_speech.name);
             }
         }
 
-        if(communicator.cli_sockfd != SOCKET_ERROR) {
-            if(communicator.available(50, communicator.cli_sockfd)) {
-                printf("[i] Client action...\n");
-                if( (cmd_buf_size = communicator.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
-                    printf("[i] Data size: %d\n", cmd_buf_size);
-                    if(cmd_buf_size > CMD_SIG_SIZE) {
-                        if( !strncmp(cmd_buf, "ackmnt", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_ack) ) {
-                            memcpy(&cmd_ack, cmd_buf, sizeof(cmd_ack));
-                            printf("[i] Clinet ACK: %d\n", cmd_ack.code);
-                        }
+        if(speecher.available(50)) {
+            printf("[i] Client action...\n");
+            if( (cmd_buf_size = speecher.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
+                printf("[i] Data size: %d\n", cmd_buf_size);
+                if(cmd_buf_size > CMD_SIG_SIZE) {
+                    if( !strncmp(cmd_buf, "ackmnt", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_ack) ) {
+                        memcpy(&cmd_ack, cmd_buf, sizeof(cmd_ack));
+                        printf("[i] Clinet ACK: %d\n", cmd_ack.code);
                     }
                 }
-                else {
-                    printf("[i] Connection closed...\n");
-                    communicator.cli_close();
-                }
+            }
+            else {
+                printf("[i] Connection closed...\n");
+                speecher.close();
             }
         }
     } // while( 1 ) {

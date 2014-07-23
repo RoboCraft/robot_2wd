@@ -229,13 +229,13 @@ int main(int argc, char* argv[])
 
     register_signal_handlers();
 
-    roboipc::Communicator communicator;
-    if( communicator.init(EYE_SOCKET_NAME, roboipc::Communicator::SERVER) ) {
+    roboipc::CommunicatorServer communicator;
+    roboipc::CommunicatorClient client;
+
+    if( communicator.init(EYE_SOCKET_NAME) ) {
         fprintf(stderr, "[!] Error: cant create communication: %s!\n", EYE_SOCKET_NAME);
         return -1;
     }
-
-    communicator.is_auto_close = false;
 
     int res = 0;
 
@@ -301,29 +301,26 @@ int main(int argc, char* argv[])
         printf("[i] FPS = %.2f\n", fps);
 
 #if 1
-        if( communicator.cli_sockfd == SOCKET_ERROR && communicator.connected(30) != SOCKET_ERROR ) {
+        SOCKET sockfd = SOCKET_ERROR;
+        if( (sockfd = communicator.connected(30)) != SOCKET_ERROR ) {
             printf("[i] Client connected...\n");
+            client.close();
+            client.sockfd = sockfd;
         }
-        if(communicator.cli_sockfd != SOCKET_ERROR) {
 
-#if 1       
-            if(communicator.cli_sockfd != SOCKET_ERROR) {
-                strncpy(cmd_eye.sig, "eyedat", CMD_SIG_SIZE);
+        if(client.sockfd != SOCKET_ERROR) {
+            strncpy(cmd_eye.sig, "eyedat", CMD_SIG_SIZE);
 
 
-                res = communicator.write(&cmd_eye, sizeof(cmd_eye));
-                printf( "[i] Send Eye data (%d)...\n", res);
-            }
-#endif
 
-
+            res = client.write(&cmd_eye, sizeof(cmd_eye));
+            printf( "[i] Send Eye data (%d)...\n", res);
         }
+
 #endif
     }  // while( !terminated ) {
 
     cvReleaseCapture( &capture );
-
-    communicator.close();
 
     printf("[i] End.\n");
 

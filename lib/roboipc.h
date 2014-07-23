@@ -9,9 +9,11 @@
 #define _ROBOIPC_H_
 
 #include "network.h"
+#include <string>
 
 namespace roboipc {
 
+#if 0
 class Communicator {
 public:
 
@@ -36,10 +38,52 @@ public:
     int type;
 
     int serv_sockfd, cli_sockfd;
-    socklen_t servlen, clilen;
+    socklen_t clilen;
     struct sockaddr_un  serv_addr, cli_addr;
 
     char *name;
+    bool is_auto_close;
+};
+#endif
+
+//
+// =======================================================
+//
+
+class CommunicatorServer {
+public:
+    CommunicatorServer();
+    ~CommunicatorServer();
+
+    int init(const char* name);
+    int close();
+
+    SOCKET connected(int msec);
+
+    int sockfd;
+    socklen_t clilen;
+    struct sockaddr_un serv_addr, cli_addr;
+
+    std::string name;
+    bool is_auto_close;
+};
+
+class CommunicatorClient {
+public:
+    CommunicatorClient();
+    ~CommunicatorClient();
+
+    int connect(const char* name);
+    int close();
+
+    int available(int msec);
+    int read(void *ptr, int count);
+    int write(const void *ptr, int len);
+
+    int sockfd;
+    struct sockaddr_un soc_addr;
+
+    std::string name;
     bool is_auto_close;
 };
 
