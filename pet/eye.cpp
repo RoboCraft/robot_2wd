@@ -229,8 +229,8 @@ int main(int argc, char* argv[])
 
     register_signal_handlers();
 
-    robolibrary::Communicator communicator;
-    if( communicator.init(EYE_SOCKET_NAME, robolibrary::Communicator::SERVER) ) {
+    roboipc::Communicator communicator;
+    if( communicator.init(EYE_SOCKET_NAME, roboipc::Communicator::SERVER) ) {
         fprintf(stderr, "[!] Error: cant create communication: %s!\n", EYE_SOCKET_NAME);
         return -1;
     }

@@ -10,7 +10,7 @@
 
 #include "network.h"
 
-namespace robolibrary {
+namespace roboipc {
 
 class Communicator {
 public:
@@ -43,6 +43,6 @@ public:
     bool is_auto_close;
 };
 
-}; //namespace robolibrary {
+}; //namespace roboipc {
 
 #endif //#ifndef _ROBOIPC_H_

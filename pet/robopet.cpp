@@ -68,14 +68,14 @@ int main(int argc, char* argv[])
 
     register_signal_handlers();
 
-    robolibrary::Communicator robodriver;
-    if( robodriver.init(DRIVER_2WD_SOCKET_NAME, robolibrary::Communicator::CLIENT) ) {
+    roboipc::Communicator robodriver;
+    if( robodriver.init(DRIVER_2WD_SOCKET_NAME, roboipc::Communicator::CLIENT) ) {
         fprintf(stderr, "[!] Error: cant create communication: %s!\n", DRIVER_2WD_SOCKET_NAME);
         return -1;
     }
 
-    robolibrary::Communicator speecher;
-    if( speecher.init(SPEECHER_SOCKET_NAME, robolibrary::Communicator::CLIENT) ) {
+    roboipc::Communicator speecher;
+    if( speecher.init(SPEECHER_SOCKET_NAME, roboipc::Communicator::CLIENT) ) {
         fprintf(stderr, "[!] Error: cant create communication: %s!\n", SPEECHER_SOCKET_NAME);
         return -1;
     }

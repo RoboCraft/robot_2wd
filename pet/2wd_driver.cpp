@@ -96,8 +96,8 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    robolibrary::Communicator communicator;
-    if( communicator.init(DRIVER_2WD_SOCKET_NAME, robolibrary::Communicator::SERVER) ) {
+    roboipc::Communicator communicator;
+    if( communicator.init(DRIVER_2WD_SOCKET_NAME, roboipc::Communicator::SERVER) ) {
         fprintf(stderr, "[!] Error: cant create communication: %s!\n", DRIVER_2WD_SOCKET_NAME);
         return -1;
     }

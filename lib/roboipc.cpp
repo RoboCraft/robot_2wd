@@ -9,20 +9,20 @@
 
 #include <string.h>
 
-robolibrary::Communicator::Communicator():
+roboipc::Communicator::Communicator():
     serv_sockfd(SOCKET_ERROR), cli_sockfd(SOCKET_ERROR), is_auto_close(true)
 {
 
 }
 
-robolibrary::Communicator::~Communicator()
+roboipc::Communicator::~Communicator()
 {
     if(is_auto_close) {
         close();
     }
 }
 
-int robolibrary::Communicator::init(const char* _name, int _type)
+int roboipc::Communicator::init(const char* _name, int _type)
 {
     if(!_name)
         return -1;
@@ -59,7 +59,7 @@ int robolibrary::Communicator::init(const char* _name, int _type)
     return 0;
 }
 
-int robolibrary::Communicator::close()
+int roboipc::Communicator::close()
 {
     if(type == SERVER) {
         srv_close();
@@ -78,14 +78,14 @@ int robolibrary::Communicator::close()
     return 0;
 }
 
-int robolibrary::Communicator::srv_close()
+int roboipc::Communicator::srv_close()
 {
     network_close_connection(serv_sockfd);
     serv_sockfd = SOCKET_ERROR;
     return 0;
 }
 
-int robolibrary::Communicator::cli_close()
+int roboipc::Communicator::cli_close()
 {
     if(cli_sockfd == SOCKET_ERROR)
         return -1;
@@ -95,7 +95,7 @@ int robolibrary::Communicator::cli_close()
     return 0;
 }
 
-int robolibrary::Communicator::connected(int msec)
+int roboipc::Communicator::connected(int msec)
 {
     if(type == CLIENT)
         return -1;
@@ -116,7 +116,7 @@ int robolibrary::Communicator::connected(int msec)
     return cli_sockfd;
 }
 
-int robolibrary::Communicator::available(int msec, int sock)
+int roboipc::Communicator::available(int msec, int sock)
 {
     fd_set rfds;
     struct timeval tv;
@@ -140,7 +140,7 @@ int robolibrary::Communicator::available(int msec, int sock)
     return select(sockfd+1, &rfds, NULL, NULL, &tv);
 }
 
-int robolibrary::Communicator::read(void *ptr, int count)
+int roboipc::Communicator::read(void *ptr, int count)
 {
     if(!ptr || count <= 0)
         return -1;
@@ -153,7 +153,7 @@ int robolibrary::Communicator::read(void *ptr, int count)
     return ::read(sockfd, ptr, count);
 }
 
-int robolibrary::Communicator::write(const void *ptr, int len)
+int roboipc::Communicator::write(const void *ptr, int len)
 {
     if(!ptr || len <= 0)
         return -1;
@@ -166,7 +166,7 @@ int robolibrary::Communicator::write(const void *ptr, int len)
     return ::write(sockfd, ptr, len);
 }
 
-int robolibrary::Communicator::get_socket_by_type()
+int roboipc::Communicator::get_socket_by_type()
 {
     int sockfd = SOCKET_ERROR;
 

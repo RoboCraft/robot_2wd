@@ -18,8 +18,8 @@ int main(int argc, char* argv[])
 {
     printf("[i] Start...\n");
 
-    robolibrary::Communicator communicator;
-    if( communicator.init(SPEECHER_SOCKET_NAME, robolibrary::Communicator::CLIENT) ) {
+    roboipc::Communicator communicator;
+    if( communicator.init(SPEECHER_SOCKET_NAME, roboipc::Communicator::CLIENT) ) {
         fprintf(stderr, "[!] Error: cant create communication: %s!\n", SPEECHER_SOCKET_NAME);
         return -1;
     }
