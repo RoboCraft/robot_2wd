@@ -166,11 +166,11 @@ int main(int argc, char* argv[])
 #if 1
 								case ORCP2_MESSAGE_ROBOT_2WD_TELEMETRY:
 									deserialize_robot_2wd(pkt.message.data, pkt.message.size, &robot_data);
-									printf( "[i] Robot2WD Telemetry: bmp: %d PWM: [%d %d] US: %d IR: %d V: %d\n",
+                                    printf( "[i] Robot2WD Telemetry: bmp: %d PWM: [%d %d] US: %d IR: [%d %d] V: %d\n",
 											robot_data.Bamper, 
 											robot_data.PWM[0], robot_data.PWM[1],
 											robot_data.US[0], 
-											robot_data.IR[0], 
+                                            robot_data.IR[0], robot_data.IR[1],
                                             robot_data.Voltage );
 									break;
 #endif

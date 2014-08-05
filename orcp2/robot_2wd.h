@@ -13,7 +13,7 @@
 #define MOTORS_COUNT 	2
 // sensors
 #define ULTRASONIC_COUNT	1
-#define INFRARED_COUNT		1
+#define INFRARED_COUNT		2
 #define BAMPER_COUNT		2
 
 #define BAMPER_1 1

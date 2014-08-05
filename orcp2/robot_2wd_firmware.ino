@@ -54,7 +54,7 @@ Robot_2WD robot_data;
 
 Ultrasonic ultrasonic(2, 3); // Trig - 2, Echo - 3
 
-//int IRpin[4] = { 0, 1, 2, 3 };
+int IRpin[INFRARED_COUNT] = { A0, A1 };
 //int battVoltPin = A7;
 
 int send_sensors_telemetry();
@@ -194,15 +194,15 @@ void read_US()
         float dist_cm = ultrasonic.Ranging(CM);   // get distance
         dist_average += dist_cm;
 #if defined(DEBUG)
-        Serial.print(dist_cm);
-        Serial.print(" : ");
+        mySerial.print(dist_cm);
+        mySerial.print(" : ");
 #endif
         delay(10);
     }
     dist_average /= (float)DIST_NUMBER;
 
 #if defined(DEBUG)
-    Serial.println(dist_average);
+    mySerial.println(dist_average);
 #endif
 #endif
 
@@ -212,14 +212,25 @@ void read_US()
     }
 }
 
-#if 0
+// linear coefficients to calculate the distance
+#define SHARP_0A41SK_K 13.0
+#define SHARP_0A41SK_B 0.42
+
+float get_distance_from_ir_volts(float volts)
+{
+    return (SHARP_0A41SK_K/volts) - SHARP_0A41SK_B;
+}
 
 void read_IR()
 {
     for(int j=0; j<INFRARED_COUNT; j++) {
-        robot_data.IR[j] = 65*pow(analogRead(IRpin[j])*0.0048828125, -1.10);
+        float volts = ( (float)analogRead(IRpin[j]) )*0.0048828125;   // value from sensor * (5/1024)
+        float dist_cm = get_distance_from_ir_volts(volts);
+        robot_data.IR[j] = (uint32_t)dist_cm;
     }
 }
+
+#if 0
 
 void read_Voltage()
 {
@@ -399,12 +410,10 @@ void loop()
     } // if(Serial.available())
 
     if( is_Time(telemetry_time, TELEMETRY_INTERVAL) ) {
-#if 0
-        Read_IR();
-        Read_Voltage();
-#endif
+        //Read_Voltage();
 
 #if defined(DRIVE_BOARD)
+        read_IR();
         read_US();
         read_Bampers();
 

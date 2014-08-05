@@ -40,7 +40,7 @@ typedef struct CmdTelemetry2WD {
     uint8_t Bamper;
     int16_t pwm[2];
     uint32_t US;
-    uint32_t IR;
+    uint32_t IR[2];
     uint32_t Voltage;
 
 } CmdTelemetry2WD;

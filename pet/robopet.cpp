@@ -127,7 +127,8 @@ int main(int argc, char* argv[])
                 if(cmd_buf_size > CMD_SIG_SIZE) {
                     if( !strncmp(cmd_buf, "tlmtry", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_telemetry_2wd) ) {
                         memcpy(&cmd_telemetry_2wd, cmd_buf, sizeof(cmd_telemetry_2wd));
-                        printf("[i] 2WD telemetry: US: %d PWM: [%d %d]\n", cmd_telemetry_2wd.US,
+                        printf("[i] 2WD telemetry: US: %d IR: [%d %d] PWM: [%d %d]\n", cmd_telemetry_2wd.US,
+                               cmd_telemetry_2wd.IR[0], cmd_telemetry_2wd.IR[1],
                                cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
 
                         if(us_counter < DIST_NUMBER) {

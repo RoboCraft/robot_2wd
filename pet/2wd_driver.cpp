@@ -207,11 +207,11 @@ int main(int argc, char* argv[])
 #if 1
                             case ORCP2_MESSAGE_ROBOT_2WD_TELEMETRY:
                                 deserialize_robot_2wd(pkt.message.data, pkt.message.size, &robot_data);
-                                printf( "[i] Robot2WD Telemetry: bmp: %d PWM: [%d %d] US: %d IR: %d V: %d\n",
+                                printf( "[i] Robot2WD Telemetry: bmp: %d PWM: [%d %d] US: %d IR: [%d %d] V: %d\n",
                                         robot_data.Bamper,
                                         robot_data.PWM[0], robot_data.PWM[1],
                                         robot_data.US[0],
-                                        robot_data.IR[0],
+                                        robot_data.IR[0], robot_data.IR[1],
                                         robot_data.Voltage );
 
                                 // send telemetry
@@ -221,7 +221,8 @@ int main(int argc, char* argv[])
                                     cmd_telemetry_2wd.pwm[0] = robot_data.PWM[0];
                                     cmd_telemetry_2wd.pwm[1] = robot_data.PWM[1];
                                     cmd_telemetry_2wd.US = robot_data.US[0];
-                                    cmd_telemetry_2wd.IR = robot_data.IR[0];
+                                    cmd_telemetry_2wd.IR[0] = robot_data.IR[0];
+                                    cmd_telemetry_2wd.IR[1] = robot_data.IR[1];
                                     cmd_telemetry_2wd.Voltage = robot_data.Voltage;
 
                                     res = client.write(&cmd_telemetry_2wd, sizeof(cmd_telemetry_2wd));
