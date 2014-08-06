@@ -24,7 +24,7 @@
 #define BAUDRATE 57600
 
 // telemetry rate (Hz)
-#define TELEMETRY_RATE 		50
+#define TELEMETRY_RATE 		10
 
 // Convert the rate into an interval
 const int TELEMETRY_INTERVAL = 1000 / TELEMETRY_RATE;
