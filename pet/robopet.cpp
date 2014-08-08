@@ -9,15 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "robopet.h"
-
-#include "orcp2/orcp2.h"
-#include "lib/serial.h"
-#include "lib/times.h"
-#include "lib/console.h"
-#include "orcp2/robot_2wd.h"
-
-#include "lib/roboipc.h"
+#include "pet.h"
 
 #if defined(LINUX)
 # include <unistd.h>
@@ -56,27 +48,15 @@ void register_signal_handlers()
 #endif //#if defined(LINUX)
 }
 
-#define DIST_NUMBER 2
-float us_measurements[DIST_NUMBER] = {0};
-int us_counter = 0;
-float us_distance = 0;
-bool is_us_valid_data = false;
-
 int main(int argc, char* argv[])
 {
     printf("[i] Start...\n");
 
     register_signal_handlers();
 
-    roboipc::CommunicatorClient robodriver;
-    if( robodriver.connect(DRIVER_2WD_SOCKET_NAME) ) {
-        fprintf(stderr, "[!] Error: cant create communication: %s!\n", DRIVER_2WD_SOCKET_NAME);
-        return -1;
-    }
-
-    roboipc::CommunicatorClient speecher;
-    if( speecher.connect(SPEECHER_SOCKET_NAME) ) {
-        fprintf(stderr, "[!] Error: cant create communication: %s!\n", SPEECHER_SOCKET_NAME);
+    Pet pet;
+    if( pet.init() ) {
+        fprintf(stderr, "[!] Error: pets init!\n");
         return -1;
     }
 
@@ -92,25 +72,6 @@ int main(int argc, char* argv[])
     setbuf(stdin, NULL);
 #endif
 
-    int res = 0;
-
-    CmdDrive2WD cmd_drive_2wd;
-    CmdTelemetry2WD cmd_telemetry_2wd;
-
-    CmdSpeech cmd_speech;
-    CmdAcknowledgment cmd_ack;
-
-    memset(&cmd_drive_2wd, 0, sizeof(cmd_drive_2wd));
-    memset(&cmd_telemetry_2wd, 0, sizeof(cmd_telemetry_2wd));
-
-    memset(&cmd_speech, 0, sizeof(cmd_speech));
-    memset(&cmd_ack, 0, sizeof(cmd_ack));
-
-    char cmd_buf[256]={0};
-    int cmd_buf_size = 0;
-
-    bool is_speech_end = true;
-
     while( !terminated ) {
 
 #if defined(USE_KEYBOARD_INPUT)
@@ -121,78 +82,7 @@ int main(int argc, char* argv[])
         }
 #endif //#if defined(USE_KEYBOARD_INPUT)
 
-        if(robodriver.available(50) > 0) {
-            printf("[i] Client data available...\n");
-            if( (cmd_buf_size = robodriver.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
-                if(cmd_buf_size > CMD_SIG_SIZE) {
-                    if( !strncmp(cmd_buf, "tlmtry", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_telemetry_2wd) ) {
-                        memcpy(&cmd_telemetry_2wd, cmd_buf, sizeof(cmd_telemetry_2wd));
-                        printf("[i] 2WD telemetry: US: %d IR: [%d %d] PWM: [%d %d]\n", cmd_telemetry_2wd.US,
-                               cmd_telemetry_2wd.IR[0], cmd_telemetry_2wd.IR[1],
-                               cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
-
-                        if(us_counter < DIST_NUMBER) {
-                            us_measurements[us_counter] = cmd_telemetry_2wd.US;
-                            us_counter++;
-                        }
-                        else {
-                            us_counter = 0;
-                            is_us_valid_data = true;
-                        }
-                        if(is_us_valid_data) {
-                            float summ = 0;
-                            for(int i=0; i<DIST_NUMBER; i++) {
-                                summ += us_measurements[i];
-                            }
-                            us_distance = summ/DIST_NUMBER;
-                            printf("[i] us_distance: %.2f\n", us_distance);
-                        }
-
-                        if(is_speech_end && is_us_valid_data && us_distance < 50) {
-                            if(speecher.sockfd != SOCKET_ERROR) {
-                                is_speech_end = false;
-
-                                strncpy(cmd_speech.sig, "speech", CMD_SIG_SIZE);
-                                cmd_speech.code = 0;
-                                strncpy(cmd_speech.name, "./snd/dog_growl.wav", sizeof(cmd_speech.name));
-
-                                if(us_distance < 30) {
-                                    strncpy(cmd_speech.name, "./snd/dog_bark2.wav", sizeof(cmd_speech.name));
-                                }
-
-                                res = speecher.write(&cmd_speech, sizeof(cmd_speech));
-                                printf( "[i] Send speech command (%d)...\n", res);
-                                printf( "[i] Data: %d %s\n", cmd_speech.code, cmd_speech.name);
-                            }
-                        }
-                    }
-
-                }
-            }
-            else {
-                printf("[i] Connection closed...\n");
-                robodriver.close();
-            }
-        }
-
-        if(speecher.available(50) > 0) {
-            printf("[i] Speecher action...\n");
-            if( (cmd_buf_size = speecher.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
-                printf("[i] Data size: %d\n", cmd_buf_size);
-                if(cmd_buf_size > CMD_SIG_SIZE) {
-                    if( !strncmp(cmd_buf, "ackmnt", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_ack) ) {
-                        memcpy(&cmd_ack, cmd_buf, sizeof(cmd_ack));
-                        printf("[i] Clinet ACK: %d\n", cmd_ack.code);
-                        is_speech_end = true;
-                    }
-                }
-            }
-            else {
-                printf("[i] Connection closed...\n");
-                speecher.close();
-            }
-        }
-
+       pet.make();
 
     } //while( !terminated ) {
 

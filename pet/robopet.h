@@ -14,6 +14,8 @@
 #define SPEECHER_SOCKET_NAME    "/tmp/socket_speecher"
 #define EYE_SOCKET_NAME         "/tmp/socket_eye"
 
+#define SOUND_FOR_DETECTION     "./snd/dog_growl.wav"
+#define SOUND_FOR_NEAR          "./snd/dog_bark2.wav"
 
 #define EYE_FRAME_WIDTH     320
 #define EYE_FRAME_HEIGHT    240

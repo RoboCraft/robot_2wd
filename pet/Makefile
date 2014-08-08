@@ -15,6 +15,10 @@ OBJECTSCPP := $(patsubst %.cpp, %.o, $(wildcard *.cpp))
 
 TARGETS	:= $(patsubst %.o, %, $(OBJECTSCPP)) 
 
+#TARGETSS := 2wd_driver speecher robopet eye test_2wd_telemetry test_speecher
+
+ADDOBJECTS := pet.o
+
 OPENCVFLAGS	:= -DUSEOPENCV=1 -I/usr/include/opencv -L/usr/lib -Wl,-rpath,/usr/lib
 OPENCVLIBRARIES := -lopencv_core -lopencv_imgproc -lopencv_highgui
 
@@ -29,7 +33,17 @@ all: $(OBJECTSCPP)
 eye.o: eye.cpp
 	make -C $(LIBPPATH)
 	$(CC) $(CFLAGS) $(OBJECTS) $(OPENCVFLAGS) -o eye $< $(LIBRARIES) $(OPENCVLIBRARIES)
+	
+pet.o: pet.cpp
+	make -C $(LIBPPATH)
+	make -C $(ORCPPATH)
+	$(CC) $(CFLAGS) $(OBJECTS) -c -o $@ $< $(LIBRARIES)
 
+robopet.o: robopet.cpp
+	make -C $(LIBPPATH)
+	make -C $(ORCPPATH)
+	$(CC) $(CFLAGS) $(OBJECTS) $(ADDOBJECTS) -o $(patsubst %.o, %, $@) $< $(LIBRARIES)	
+	
 %.o: %.cpp
 	make -C $(LIBPPATH)
 	make -C $(ORCPPATH)
