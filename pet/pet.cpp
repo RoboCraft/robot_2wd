@@ -208,7 +208,7 @@ int Pet::make_search_state()
     case ST_MOVE_RIGHT:
         printf("[i][Pet][make_search_state] Right!\n");
         right(speed);
-        if(current_time.tv_sec - time_mark.tv_sec > 2 ) {
+        if(current_time.tv_sec - time_mark.tv_sec > 1) {
             gettimeofday(&time_mark, NULL);
             if(rand() % 100 > 90) {
                 search_state = ST_MOVE_RIGHT;
@@ -221,7 +221,7 @@ int Pet::make_search_state()
     case ST_MOVE_LEFT:
         printf("[i][Pet][make_search_state] Left!\n");
         left(speed);
-        if(current_time.tv_sec - time_mark.tv_sec > 2 ) {
+        if(current_time.tv_sec - time_mark.tv_sec > 1) {
             gettimeofday(&time_mark, NULL);
             if(rand() % 100 > 90) {
                 search_state = ST_MOVE_LEFT;
