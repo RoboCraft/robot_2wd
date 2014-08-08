@@ -21,6 +21,10 @@
 
 #define US_DIST_NUMBER 2
 
+#define US_MIN_DISTANCE 30
+
+#define IR_MIN_DISTANCE 4
+
 class Pet
 {
 public:
@@ -30,14 +34,72 @@ public:
     int init();
     int make();
 
-    enum { ST_NA=0,
-           ST_INIT,
-           ST_MOVE_FORWARD, ST_MOVE_LEFT, ST_MOVE_RIGHT, ST_MOVE_BACKWARD, ST_STOP,
-           ST_SEARCH
+    // pet states:
+    enum
+    {
+        State_NA = -1,
+        State_deactivate,
+        State_init,
+        State_activate,
+        State_look,
+        State_search
+    };
+
+    enum { ST_NA = -1,
+           ST_MOVE_FORWARD, ST_MOVE_LEFT, ST_MOVE_RIGHT, ST_MOVE_BACKWARD, ST_STOP
          };
+
+
+    // emotions
+    enum
+    {
+        Emotion_NA = -1,
+        Emotion_calmness,
+        Emotion_smiling,
+        Emotion_yawning,
+        Emotion_sniffing, // фырканье
+        Emotion_angry,
+        Emotion_fatigue, // усталость
+        Emotion_attention,
+        Emotion_sleepy
+    };
+
+    // behaviour
+    enum
+    {
+        Behaviour_NA = -1,
+        Behaviour_sleepy,
+        Behaviour_calmness,
+        Behaviour_curiosity,
+        Behaviour_playfulness,
+        Behaviour_joy,
+        Behaviour_caution,
+        Behaviour_amazement,
+        Behaviour_tiredness,
+        Behaviour_fear,
+        Behaviour_anger,
+        Behaviour_indisposition,
+        Behaviour_hunger,
+        Behaviour_philanthropy
+    };
+
     int state;
+    int emotion;
+
+    int search_state;
+    struct timeval time_mark;
+
+    int speed;
 
     int make_state();
+    int make_search_state();
+
+    int drive(int16_t pwm1, int16_t pwm2);
+    int stop();
+    int forward(int16_t speed);
+    int backward(int16_t speed);
+    int left(int16_t speed);
+    int right(int16_t speed);
 
 protected:
 

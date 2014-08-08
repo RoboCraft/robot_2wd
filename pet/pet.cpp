@@ -7,15 +7,17 @@
 #include "pet.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 Pet::Pet()
 {
-    state = ST_NA;
+    state = State_NA;
+    srandom(time(0));
 }
 
 Pet::~Pet()
 {
-
+    state = State_deactivate;
 }
 
 int Pet::init()
@@ -48,7 +50,8 @@ int Pet::init()
     us_distance = 0;
     is_us_valid_data = false;
 
-    state = ST_INIT;
+    state = State_init;
+    emotion = 0;
 
     return 0;
 }
@@ -94,13 +97,13 @@ int Pet::make()
                             cmd_speech.code = 0;
                             strncpy(cmd_speech.name, SOUND_FOR_DETECTION, sizeof(cmd_speech.name));
 
-                            if(us_distance < 30) {
+                            if(us_distance < US_MIN_DISTANCE) {
                                 strncpy(cmd_speech.name, SOUND_FOR_NEAR, sizeof(cmd_speech.name));
                             }
 
                             res = speecher.write(&cmd_speech, sizeof(cmd_speech));
-                            printf( "[i] Send speech command (%d)...\n", res);
-                            printf( "[i] Data: %d %s\n", cmd_speech.code, cmd_speech.name);
+                            printf("[i] Send speech command (%d)...\n", res);
+                            printf("[i] Data: %d %s\n", cmd_speech.code, cmd_speech.name);
                         }
                     }
                 }
@@ -140,14 +143,140 @@ int Pet::make_state()
 {
     printf("[i][Pet][make_state] State: %d\n", state);
     switch (state) {
-    case ST_NA:
+    case State_NA:
         break;
-    case ST_INIT:
-        state = ST_SEARCH;
+    case State_init:
+        state = State_activate;
+        break;
+    case State_activate:
+        // after activation
+        state = State_search;
+        search_state = ST_MOVE_FORWARD;
+        break;
+    case State_search:
+        make_search_state();
         break;
     default:
         printf("[i][Pet][make_state] Unknown state!\n");
         break;
     }
     return 0;
+}
+
+int Pet::make_search_state()
+{
+    printf("[i][Pet][make_search_state] State: %d\n", search_state);
+
+    if( search_state != ST_MOVE_BACKWARD &&
+        ( cmd_telemetry_2wd.IR[0] <= IR_MIN_DISTANCE || cmd_telemetry_2wd.IR[1] <= IR_MIN_DISTANCE ) ) {
+        printf("[i][Pet][make_search_state] STOP!\n");
+        stop();
+        search_state = ST_STOP;
+    }
+
+    struct timeval current_time;
+    gettimeofday(&current_time, NULL);
+
+    speed = 70;
+
+    switch (search_state) {
+    case ST_NA:
+        break;
+    case ST_MOVE_FORWARD:
+        printf("[i][Pet][make_search_state] Forward!\n");
+        forward(speed);
+        break;
+    case ST_STOP:
+        printf("[i][Pet][make_search_state] Stop!\n");
+        stop();
+        gettimeofday(&time_mark, NULL);
+        search_state = ST_MOVE_BACKWARD;
+        break;
+    case ST_MOVE_BACKWARD:
+        printf("[i][Pet][make_search_state] Backward!\n");
+        backward(speed);
+        //printf("[i][Pet][make_search_state] %u %u\n", current_time.tv_sec, time_mark.tv_sec);
+        if( cmd_telemetry_2wd.IR[0] > IR_MIN_DISTANCE && cmd_telemetry_2wd.IR[1] > IR_MIN_DISTANCE ) {
+        //if(current_time.tv_sec - time_mark.tv_sec > 2 ) {
+            gettimeofday(&time_mark, NULL);
+            search_state = ST_MOVE_RIGHT;
+            if(rand() % 100 > 50) {
+                search_state = ST_MOVE_LEFT;
+            }
+        }
+        break;
+    case ST_MOVE_RIGHT:
+        printf("[i][Pet][make_search_state] Right!\n");
+        right(speed);
+        if(current_time.tv_sec - time_mark.tv_sec > 2 ) {
+            gettimeofday(&time_mark, NULL);
+            if(rand() % 100 > 90) {
+                search_state = ST_MOVE_RIGHT;
+            }
+            else {
+                search_state = ST_MOVE_FORWARD;
+            }
+        }
+        break;
+    case ST_MOVE_LEFT:
+        printf("[i][Pet][make_search_state] Left!\n");
+        left(speed);
+        if(current_time.tv_sec - time_mark.tv_sec > 2 ) {
+            gettimeofday(&time_mark, NULL);
+            if(rand() % 100 > 90) {
+                search_state = ST_MOVE_LEFT;
+            }
+            else {
+                search_state = ST_MOVE_FORWARD;
+            }
+        }
+        break;
+    default:
+        printf("[i][Pet][make_search_state] Unknown state!\n");
+        break;
+    }
+    return 0;
+}
+
+int Pet::drive(int16_t pwm1, int16_t pwm2)
+{
+    int res = 0;
+
+    if(robodriver.sockfd != SOCKET_ERROR) {
+        strncpy(cmd_drive_2wd.sig, "drive2", CMD_SIG_SIZE);
+
+        cmd_drive_2wd.pwm[0] = pwm1;
+        cmd_drive_2wd.pwm[1] = pwm2;
+
+        res = robodriver.write(&cmd_drive_2wd, sizeof(cmd_drive_2wd));
+        //printf("[i] Send drive command (%d)...\n", res);
+        //printf("[i] Set pwm to: [%d %d]\n", cmd_drive_2wd.pwm[0], cmd_drive_2wd.pwm[1]);
+    }
+
+    return res;
+}
+
+int Pet::stop()
+{
+    return drive(0, 0);
+}
+
+int Pet::forward(int16_t speed)
+{
+    return drive(speed, speed);
+}
+
+int Pet::backward(int16_t speed)
+{
+    return drive(-speed, -speed);
+}
+
+int Pet::left(int16_t speed)
+{
+    return drive(-speed, speed);
+}
+
+int Pet::right(int16_t speed)
+{
+    return drive(speed, -speed);
 }
