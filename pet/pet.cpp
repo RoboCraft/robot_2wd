@@ -66,7 +66,7 @@ int Pet::make()
 
     if(robodriver.available(50) > 0) {
         printf("[i] Client data available...\n");
-        if( (cmd_buf_size = robodriver.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
+        if( (cmd_buf_size = robodriver.read(cmd_buf, sizeof(cmd_buf))) > 0 ) {
             if(cmd_buf_size > CMD_SIG_SIZE) {
                 if( !strncmp(cmd_buf, "tlmtry", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_telemetry_2wd) ) {
                     memcpy(&cmd_telemetry_2wd, cmd_buf, sizeof(cmd_telemetry_2wd));
@@ -120,7 +120,7 @@ int Pet::make()
 
     if(speecher.available(50) > 0) {
         printf("[i] Speecher action...\n");
-        if( (cmd_buf_size = speecher.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
+        if( (cmd_buf_size = speecher.read(cmd_buf, sizeof(cmd_buf))) > 0 ) {
             printf("[i] Data size: %d\n", cmd_buf_size);
             if(cmd_buf_size > CMD_SIG_SIZE) {
                 if( !strncmp(cmd_buf, "ackmnt", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_ack) ) {
