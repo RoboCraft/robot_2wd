@@ -19,7 +19,6 @@
 #endif
 
 #if defined(LINUX)
-
 volatile sig_atomic_t terminated = 0;
 volatile sig_atomic_t is_sigpipe = 0;
 
@@ -32,6 +31,8 @@ void signal_handler(int sig)
         is_sigpipe = 1;
     }
 }
+#else
+volatile int terminated = 0;
 #endif //#if defined(LINUX)
 
 void register_signal_handlers()

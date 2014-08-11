@@ -13,43 +13,6 @@
 
 namespace roboipc {
 
-#if 0
-class Communicator {
-public:
-
-    enum {SERVER=0, CLIENT};
-
-    Communicator();
-    ~Communicator();
-
-    int init(const char* name, int type=SERVER);
-    int close();
-    int srv_close();
-    int cli_close();
-
-    int connected(int msec);
-    int available(int msec, int sock=SOCKET_ERROR);
-
-    int read(void *ptr, int count);
-    int write(const void *ptr, int len);
-
-    int get_socket_by_type();
-
-    int type;
-
-    int serv_sockfd, cli_sockfd;
-    socklen_t clilen;
-    struct sockaddr_un  serv_addr, cli_addr;
-
-    char *name;
-    bool is_auto_close;
-};
-#endif
-
-//
-// =======================================================
-//
-
 class CommunicatorServer {
 public:
     CommunicatorServer();
@@ -60,9 +23,11 @@ public:
 
     SOCKET connected(int msec);
 
-    int sockfd;
+    SOCKET sockfd;
     socklen_t clilen;
+#if defined(LINUX)
     struct sockaddr_un serv_addr, cli_addr;
+#endif //#if defined(LINUX)
 
     std::string name;
     bool is_auto_close;
@@ -80,8 +45,10 @@ public:
     int read(void *ptr, int count);
     int write(const void *ptr, int len);
 
-    int sockfd;
+    SOCKET sockfd;
+#if defined(LINUX)
     struct sockaddr_un soc_addr;
+#endif //#if defined(LINUX)
 
     std::string name;
     bool is_auto_close;

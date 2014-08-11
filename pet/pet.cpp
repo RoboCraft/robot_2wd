@@ -12,7 +12,9 @@
 Pet::Pet()
 {
     state = State_NA;
+#if defined(LINUX)
     srandom(time(0));
+#endif //#if defined(LINUX)
 }
 
 Pet::~Pet()
@@ -174,8 +176,7 @@ int Pet::make_search_state()
         search_state = ST_STOP;
     }
 
-    struct timeval current_time;
-    gettimeofday(&current_time, NULL);
+    DWORD current_time = orv::time::millis();
 
     speed = 70;
 
@@ -189,7 +190,7 @@ int Pet::make_search_state()
     case ST_STOP:
         printf("[i][Pet][make_search_state] Stop!\n");
         stop();
-        gettimeofday(&time_mark, NULL);
+        time_mark = orv::time::millis();
         search_state = ST_MOVE_BACKWARD;
         break;
     case ST_MOVE_BACKWARD:
@@ -198,7 +199,7 @@ int Pet::make_search_state()
         //printf("[i][Pet][make_search_state] %u %u\n", current_time.tv_sec, time_mark.tv_sec);
         if( cmd_telemetry_2wd.IR[0] > IR_MIN_DISTANCE && cmd_telemetry_2wd.IR[1] > IR_MIN_DISTANCE ) {
         //if(current_time.tv_sec - time_mark.tv_sec > 2 ) {
-            gettimeofday(&time_mark, NULL);
+            time_mark = orv::time::millis();
             search_state = ST_MOVE_RIGHT;
             if(rand() % 100 > 50) {
                 search_state = ST_MOVE_LEFT;
@@ -208,8 +209,8 @@ int Pet::make_search_state()
     case ST_MOVE_RIGHT:
         printf("[i][Pet][make_search_state] Right!\n");
         right(speed);
-        if(current_time.tv_sec - time_mark.tv_sec > 1) {
-            gettimeofday(&time_mark, NULL);
+        if(current_time - time_mark > 1000) {
+            time_mark = orv::time::millis();
             if(rand() % 100 > 90) {
                 search_state = ST_MOVE_RIGHT;
             }
@@ -221,8 +222,8 @@ int Pet::make_search_state()
     case ST_MOVE_LEFT:
         printf("[i][Pet][make_search_state] Left!\n");
         left(speed);
-        if(current_time.tv_sec - time_mark.tv_sec > 1) {
-            gettimeofday(&time_mark, NULL);
+        if(current_time - time_mark > 1000) {
+            time_mark = orv::time::millis();
             if(rand() % 100 > 90) {
                 search_state = ST_MOVE_LEFT;
             }

@@ -28,11 +28,6 @@
 class Pet
 {
 public:
-    Pet();
-    ~Pet();
-
-    int init();
-    int make();
 
     // pet states:
     enum
@@ -83,11 +78,17 @@ public:
         Behaviour_philanthropy
     };
 
+    Pet();
+    ~Pet();
+
+    int init();
+    int make();
+
     int state;
     int emotion;
 
     int search_state;
-    struct timeval time_mark;
+    DWORD time_mark;
 
     int speed;
 
