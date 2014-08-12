@@ -197,7 +197,7 @@ int Pet::make_search_state()
 {
     printf("[i][Pet][make_search_state] State: %d\n", search_state);
 
-    if( search_state != ST_MOVE_BACKWARD ) {
+    if( search_state != ST_MOVE_BACKWARD && search_state != ST_STOP ) {
         if( (is_us_valid_data && us_distance < US_CLOSE_DISTANCE) ||
                 (cmd_telemetry_2wd.IR[0] <= IR_MIN_DISTANCE || cmd_telemetry_2wd.IR[1] <= IR_MIN_DISTANCE) ) {
             printf("[i][Pet][make_search_state] STOP!\n");
@@ -226,7 +226,9 @@ int Pet::make_search_state()
         backward(speed);
         //printf("[i][Pet][make_search_state] %u %u\n", current_time.tv_sec, time_mark.tv_sec);
         if( cmd_telemetry_2wd.IR[0] > IR_MIN_DISTANCE && cmd_telemetry_2wd.IR[1] > IR_MIN_DISTANCE ) {
-        //if(current_time.tv_sec - time_mark.tv_sec > 2 ) {
+            if(is_us_valid_data && us_distance < US_CLOSE_DISTANCE) {
+                break;
+            }
             time_mark = orv::time::millis();
             search_state = ST_MOVE_RIGHT;
             if(rand() % 100 > 50) {
