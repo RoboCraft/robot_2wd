@@ -19,11 +19,13 @@
 
 #include "lib/roboipc.h"
 
-#define US_DIST_NUMBER 2
+#define US_DIST_NUMBER      2
 
-#define US_MIN_DISTANCE 30
+#define US_NEAR_DISTANCE    50
+#define US_MIN_DISTANCE     30
+#define US_CLOSE_DISTANCE   10
 
-#define IR_MIN_DISTANCE 4
+#define IR_MIN_DISTANCE     4
 
 class Pet
 {

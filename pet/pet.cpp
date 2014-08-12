@@ -95,7 +95,7 @@ int Pet::make()
                         printf("[i] us_distance: %.2f\n", us_distance);
                     }
 
-                    if(is_speech_end && is_us_valid_data && us_distance < 50) {
+                    if(is_speech_end && is_us_valid_data && us_distance < US_NEAR_DISTANCE) {
                         if(speecher.sockfd != SOCKET_ERROR) {
                             is_speech_end = false;
 
@@ -197,11 +197,13 @@ int Pet::make_search_state()
 {
     printf("[i][Pet][make_search_state] State: %d\n", search_state);
 
-    if( search_state != ST_MOVE_BACKWARD &&
-        ( cmd_telemetry_2wd.IR[0] <= IR_MIN_DISTANCE || cmd_telemetry_2wd.IR[1] <= IR_MIN_DISTANCE ) ) {
-        printf("[i][Pet][make_search_state] STOP!\n");
-        stop();
-        search_state = ST_STOP;
+    if( search_state != ST_MOVE_BACKWARD ) {
+        if( (is_us_valid_data && us_distance < US_CLOSE_DISTANCE) ||
+                (cmd_telemetry_2wd.IR[0] <= IR_MIN_DISTANCE || cmd_telemetry_2wd.IR[1] <= IR_MIN_DISTANCE) ) {
+            printf("[i][Pet][make_search_state] STOP!\n");
+            stop();
+            search_state = ST_STOP;
+        }
     }
 
     speed = 70;
