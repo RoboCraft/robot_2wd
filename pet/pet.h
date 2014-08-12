@@ -90,8 +90,12 @@ public:
     int search_state;
     DWORD time_mark;
 
+    DWORD blink_time;
+    unsigned int blink_counter;
+
     int speed;
 
+    int make_blink();
     int make_state();
     int make_search_state();
 
@@ -109,6 +113,7 @@ protected:
 
     CmdDrive2WD cmd_drive_2wd;
     CmdTelemetry2WD cmd_telemetry_2wd;
+    CmdDigitalWrite cmd_digital_write;
     CmdSpeech cmd_speech;
     CmdAcknowledgment cmd_ack;
 

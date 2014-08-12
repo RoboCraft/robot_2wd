@@ -73,3 +73,29 @@ DWORD orv::time::millis()
 	return (tv.tv_sec*1000+tv.tv_usec/1000);
 #endif //#if defined(WIN32)
 }
+
+#define TIMECTL_MAXTICKS  4294967295L
+
+bool orv::time::is_time(DWORD &timeMark, DWORD timeInterval)
+{
+    DWORD timeCurrent;
+    DWORD timeElapsed;
+
+    bool result = false;
+
+    timeCurrent = orv::time::millis();
+    if( timeCurrent < timeMark ) { // Rollover detected
+        // elapsed = all the ticks to overflow + all the ticks since overflow
+        timeElapsed = (TIMECTL_MAXTICKS - timeMark) + timeCurrent;
+    }
+    else {
+        timeElapsed = timeCurrent - timeMark;
+    }
+
+    if(timeElapsed >= timeInterval) {
+        timeMark = timeCurrent;
+        result = true;
+    }
+
+    return (result);
+}

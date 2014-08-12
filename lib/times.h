@@ -45,6 +45,8 @@ namespace orv
 
 	DWORD millis();
 
+    bool is_time(DWORD &timeMark, DWORD timeInterval);
+
 	}; // namespace time
 }; //namespace orv
 

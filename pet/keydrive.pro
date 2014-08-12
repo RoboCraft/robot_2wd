@@ -7,9 +7,10 @@
 QT       += 
 #widgets
 
-TARGET = qkeydrive
+TARGET = keydrive
 TEMPLATE = app
 
+CONFIG += console
 
 SOURCES += keydrive.cpp \
     pet.cpp \

@@ -38,6 +38,7 @@ int Pet::init()
 
     memset(&cmd_drive_2wd, 0, sizeof(cmd_drive_2wd));
     memset(&cmd_telemetry_2wd, 0, sizeof(cmd_telemetry_2wd));
+    memset(&cmd_digital_write, 0, sizeof(cmd_digital_write));
 
     memset(&cmd_speech, 0, sizeof(cmd_speech));
     memset(&cmd_ack, 0, sizeof(cmd_ack));
@@ -54,6 +55,9 @@ int Pet::init()
 
     state = State_init;
     emotion = 0;
+
+    blink_time = 0;
+    blink_counter = 0;
 
     return 0;
 }
@@ -136,9 +140,33 @@ int Pet::make()
         }
     }
 
+    make_blink();
+
     make_state();
 
     return 0;
+}
+
+int Pet::make_blink()
+{
+    int res = 0;
+
+    // Blink
+    if(orv::time::is_time(blink_time, 1000)) {
+        blink_counter++;
+        int val = blink_counter%2;
+        printf("[i] Blink: %d\n", val);
+
+        if(robodriver.sockfd != SOCKET_ERROR) {
+            strncpy(cmd_digital_write.sig, "dgtwrt", CMD_SIG_SIZE);
+
+            cmd_digital_write.pin = 13; // L
+            cmd_digital_write.value = (int16_t)val;
+
+            res = robodriver.write(&cmd_digital_write, sizeof(cmd_digital_write));
+        }
+    }
+    return res;
 }
 
 int Pet::make_state()
@@ -176,8 +204,6 @@ int Pet::make_search_state()
         search_state = ST_STOP;
     }
 
-    DWORD current_time = orv::time::millis();
-
     speed = 70;
 
     switch (search_state) {
@@ -209,7 +235,7 @@ int Pet::make_search_state()
     case ST_MOVE_RIGHT:
         printf("[i][Pet][make_search_state] Right!\n");
         right(speed);
-        if(current_time - time_mark > 1000) {
+        if( orv::time::is_time(time_mark, 1000) ) {
             time_mark = orv::time::millis();
             if(rand() % 100 > 90) {
                 search_state = ST_MOVE_RIGHT;
@@ -222,7 +248,7 @@ int Pet::make_search_state()
     case ST_MOVE_LEFT:
         printf("[i][Pet][make_search_state] Left!\n");
         left(speed);
-        if(current_time - time_mark > 1000) {
+        if( orv::time::is_time(time_mark, 1000) ) {
             time_mark = orv::time::millis();
             if(rand() % 100 > 90) {
                 search_state = ST_MOVE_LEFT;

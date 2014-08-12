@@ -22,18 +22,7 @@ typedef struct CmdAcknowledgment {
 // robopet commands
 //
 
-typedef struct CmdDrive2WD {
-    char sig[CMD_SIG_SIZE]; // "drive2"
-    int16_t pwm[2];
-
-} CmdDrive2WD;
-
-typedef struct CmdSpeech {
-    char sig[CMD_SIG_SIZE]; // "speech"
-    uint32_t code;
-    char name[64];
-
-} CmdSpeech;
+// Arduino/CraftDuino
 
 typedef struct CmdTelemetry2WD {
     char sig[CMD_SIG_SIZE]; // "tlmtry"
@@ -44,6 +33,25 @@ typedef struct CmdTelemetry2WD {
     uint32_t Voltage;
 
 } CmdTelemetry2WD;
+
+typedef struct CmdDrive2WD {
+    char sig[CMD_SIG_SIZE]; // "drive2"
+    int16_t pwm[2];
+
+} CmdDrive2WD;
+
+typedef struct CmdDigitalWrite {
+    char sig[CMD_SIG_SIZE]; // "dgtwrt"
+    int16_t pin;
+    int16_t value;
+} CmdDigitalWrite;
+
+typedef struct CmdSpeech {
+    char sig[CMD_SIG_SIZE]; // "speech"
+    uint32_t code;
+    char name[64];
+
+} CmdSpeech;
 
 #define PET_EYE_COLORS_COUNT 3
 

@@ -136,9 +136,11 @@ int main(int argc, char* argv[])
 
     CmdDrive2WD cmd_drive_2wd;
     CmdTelemetry2WD cmd_telemetry_2wd;
+    CmdDigitalWrite cmd_digital_write;
 
     memset(&cmd_drive_2wd, 0, sizeof(cmd_drive_2wd));
     memset(&cmd_telemetry_2wd, 0, sizeof(cmd_telemetry_2wd));
+    memset(&cmd_digital_write, 0, sizeof(cmd_digital_write));
     char cmd_buf[128]={0};
     int cmd_buf_size = 0;
 
@@ -268,8 +270,13 @@ int main(int argc, char* argv[])
                 if(cmd_buf_size > CMD_SIG_SIZE) {
                     if( !strncmp(cmd_buf, "drive2", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_drive_2wd) ) {
                         memcpy(&cmd_drive_2wd, cmd_buf, sizeof(cmd_drive_2wd));
-                        printf("[i] Clinet command 2WD drive: %d %d\n", cmd_drive_2wd.pwm[0], cmd_drive_2wd.pwm[1]);
+                        printf("[i] Client command 2WD drive: %d %d\n", cmd_drive_2wd.pwm[0], cmd_drive_2wd.pwm[1]);
                         orcp.drive_2wd(cmd_drive_2wd.pwm[0], cmd_drive_2wd.pwm[1]);
+                    }
+                    else if(!strncmp(cmd_buf, "dgtwrt", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_digital_write)) {
+                        memcpy(&cmd_digital_write, cmd_buf, sizeof(cmd_digital_write));
+                        printf("[i] Client command digitalWrite: %d %d\n", cmd_digital_write.pin, cmd_digital_write.value);
+                        orcp.digitalWrite(cmd_digital_write.pin, cmd_digital_write.value);
                     }
                 }
             }
