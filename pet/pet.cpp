@@ -20,6 +20,7 @@ Pet::Pet()
 Pet::~Pet()
 {
     state = State_deactivate;
+    stop();
 }
 
 int Pet::init()
