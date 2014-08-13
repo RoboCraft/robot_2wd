@@ -48,11 +48,6 @@ int Pet::init()
 
     is_speech_end = true;
 
-    memset(us_measurements, 0, sizeof(us_measurements));
-    us_counter = 0;
-    us_distance = 0;
-    is_us_valid_data = false;
-
     state = State_init;
     emotion = 0;
 
@@ -78,24 +73,18 @@ int Pet::make()
                            cmd_telemetry_2wd.IR[0], cmd_telemetry_2wd.IR[1],
                             cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
 
-                    if(us_counter < US_DIST_NUMBER) {
-                        us_measurements[us_counter] = cmd_telemetry_2wd.US;
-                        us_counter++;
-                    }
-                    else {
-                        us_counter = 0;
-                        is_us_valid_data = true;
-                    }
-                    if(is_us_valid_data) {
-                        float summ = 0;
-                        for(int i=0; i<US_DIST_NUMBER; i++) {
-                            summ += us_measurements[i];
-                        }
-                        us_distance = summ/US_DIST_NUMBER;
-                        printf("[i] us_distance: %.2f\n", us_distance);
+                    us_measurement.add( cmd_telemetry_2wd.US );
+                    if(us_measurement.is_valid) {
+                        printf("[i] us_distance: %.2f\n", us_measurement.value);
                     }
 
-                    if(is_speech_end && is_us_valid_data && us_distance < US_NEAR_DISTANCE) {
+                    ir_measurement_left.add(cmd_telemetry_2wd.IR[0]);
+                    ir_measurement_right.add(cmd_telemetry_2wd.IR[1]);
+                    if(ir_measurement_left.is_valid) {
+                        printf("[i] ir_distance: %.2f %.2f\n", ir_measurement_left.value, ir_measurement_right.value);
+                    }
+
+                    if(is_speech_end && us_measurement.is_valid && us_measurement.value < US_NEAR_DISTANCE) {
                         if(speecher.sockfd != SOCKET_ERROR) {
                             is_speech_end = false;
 
@@ -103,7 +92,7 @@ int Pet::make()
                             cmd_speech.code = 0;
                             strncpy(cmd_speech.name, SOUND_FOR_DETECTION, sizeof(cmd_speech.name));
 
-                            if(us_distance < US_MIN_DISTANCE) {
+                            if(us_measurement.value < US_MIN_DISTANCE) {
                                 strncpy(cmd_speech.name, SOUND_FOR_NEAR, sizeof(cmd_speech.name));
                             }
 
@@ -198,8 +187,9 @@ int Pet::make_search_state()
     printf("[i][Pet][make_search_state] State: %d\n", search_state);
 
     if( search_state != ST_MOVE_BACKWARD && search_state != ST_STOP ) {
-        if( (is_us_valid_data && us_distance < US_CLOSE_DISTANCE) ||
-                (cmd_telemetry_2wd.IR[0] <= IR_MIN_DISTANCE || cmd_telemetry_2wd.IR[1] <= IR_MIN_DISTANCE) ) {
+        if( (us_measurement.is_valid && us_measurement.value < US_CLOSE_DISTANCE) ||
+            (ir_measurement_left.is_valid && ir_measurement_left.value <= IR_MIN_DISTANCE) ||
+            (ir_measurement_right.is_valid && ir_measurement_right.value <= IR_MIN_DISTANCE) ) {
             printf("[i][Pet][make_search_state] STOP!\n");
             stop();
             search_state = ST_STOP;
@@ -225,8 +215,9 @@ int Pet::make_search_state()
         printf("[i][Pet][make_search_state] Backward!\n");
         backward(speed);
         //printf("[i][Pet][make_search_state] %u %u\n", current_time.tv_sec, time_mark.tv_sec);
-        if( cmd_telemetry_2wd.IR[0] > IR_MIN_DISTANCE && cmd_telemetry_2wd.IR[1] > IR_MIN_DISTANCE ) {
-            if(is_us_valid_data && us_distance < US_CLOSE_DISTANCE) {
+        if( (ir_measurement_left.is_valid && ir_measurement_left.value > IR_MIN_DISTANCE) &&
+            (ir_measurement_right.is_valid && ir_measurement_right.value > IR_MIN_DISTANCE) ) {
+            if(us_measurement.is_valid && us_measurement.value < US_CLOSE_DISTANCE) {
                 break;
             }
             time_mark = orv::time::millis();

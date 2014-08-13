@@ -18,8 +18,10 @@
 #include "orcp2/robot_2wd.h"
 
 #include "lib/roboipc.h"
+#include "lib/filtration.h"
 
-#define US_DIST_NUMBER      2
+#define US_DIST_NUMBER      3
+#define IR_DIST_NUMBER      3
 
 #define US_NEAR_DISTANCE    50
 #define US_MIN_DISTANCE     30
@@ -122,10 +124,9 @@ protected:
     char cmd_buf[256];
     int cmd_buf_size;
 
-    float us_measurements[US_DIST_NUMBER];
-    int us_counter;
-    float us_distance;
-    bool is_us_valid_data;
+    TSimpleFiltration<float, US_DIST_NUMBER> us_measurement;
+    TSimpleFiltration<float, IR_DIST_NUMBER> ir_measurement_left;
+    TSimpleFiltration<float, IR_DIST_NUMBER> ir_measurement_right;
 
     bool is_speech_end;
 };

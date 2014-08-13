@@ -37,7 +37,8 @@ HEADERS  += commands.h \
     ../lib/serial.h \
     ../lib/stream.h \
     ../lib/times.h \
-    ../lib/types.h
+    ../lib/types.h \
+    ../lib/filtration.h
 
 #FORMS    += 
 
