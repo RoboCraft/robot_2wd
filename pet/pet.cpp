@@ -70,9 +70,11 @@ int Pet::make()
             if(cmd_buf_size > CMD_SIG_SIZE) {
                 if( !strncmp(cmd_buf, "tlmtry", CMD_SIG_SIZE) && cmd_buf_size >= sizeof(cmd_telemetry_2wd) ) {
                     memcpy(&cmd_telemetry_2wd, cmd_buf, sizeof(cmd_telemetry_2wd));
-                    printf("[i] 2WD telemetry: US: %d IR: [%d %d] PWM: [%d %d]\n", cmd_telemetry_2wd.US,
+                    printf("[i] 2WD telemetry: Bmp: %d US: %d IR: [%d %d] PWM: [%d %d]\n",
+                           cmd_telemetry_2wd.Bumper,
+                           cmd_telemetry_2wd.US,
                            cmd_telemetry_2wd.IR[0], cmd_telemetry_2wd.IR[1],
-                            cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
+                           cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
 
                     us_measurement.add( cmd_telemetry_2wd.US );
                     if(us_measurement.is_valid) {
@@ -188,7 +190,8 @@ int Pet::make_search_state()
     printf("[i][Pet][make_search_state] State: %d\n", search_state);
 
     if( search_state != ST_MOVE_BACKWARD && search_state != ST_STOP ) {
-        if( (us_measurement.is_valid && us_measurement.value < US_CLOSE_DISTANCE) ||
+        if( cmd_telemetry_2wd.Bumper ||
+            (us_measurement.is_valid && us_measurement.value < US_CLOSE_DISTANCE) ||
             (ir_measurement_left.is_valid && ir_measurement_left.value <= IR_MIN_DISTANCE) ||
             (ir_measurement_right.is_valid && ir_measurement_right.value <= IR_MIN_DISTANCE) ) {
             printf("[i][Pet][make_search_state] STOP!\n");

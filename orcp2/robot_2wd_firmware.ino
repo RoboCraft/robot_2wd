@@ -298,14 +298,14 @@ void motor_drive(int motor_id, int dir, int pwm)
     }
 }
 
-void read_Bampers()
+void read_Bumpers()
 {
 #if defined(USE_BUMPER)
-    robot_data.Bamper = 0;
+    robot_data.Bumper = 0;
     for (int i=0; i<BAMPER_COUNT; i++) {
         bumperState[i] = digitalRead( bumperPin[i] );
         if(bumperState[i]) {
-            robot_data.Bamper = robot_data.Bamper | (1 << i);
+            robot_data.Bumper = robot_data.Bumper | (1 << i);
         }
     }
 #endif //#if defined(USE_BUMPER)
@@ -441,7 +441,7 @@ void loop()
 #if defined(DRIVE_BOARD)
         read_IR();
         read_US();
-        read_Bampers();
+        read_Bumpers();
 
         send_telemetry();
 #endif	//#if defined(DRIVE_BOARD)

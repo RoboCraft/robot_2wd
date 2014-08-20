@@ -26,7 +26,7 @@ typedef struct CmdAcknowledgment {
 
 typedef struct CmdTelemetry2WD {
     char sig[CMD_SIG_SIZE]; // "tlmtry"
-    uint8_t Bamper;
+    uint8_t Bumper;
     int16_t pwm[2];
     uint32_t US;
     uint32_t IR[2];

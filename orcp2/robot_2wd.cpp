@@ -13,7 +13,7 @@ uint16_t serialize_robot_2wd(Robot_2WD* src, uint8_t* dst, uint16_t dst_size)
 		return -1;
 
 	uint16_t l = 0;	
-	dst[l++] = src->Bamper;
+    dst[l++] = src->Bumper;
 
 	int i;
 	for(i=0; i<MOTORS_COUNT; i++) {
@@ -40,7 +40,7 @@ uint16_t deserialize_robot_2wd(uint8_t* src, uint16_t src_size, Robot_2WD* dst)
 		return -1;
 
 	uint16_t l = 0;
-	dst->Bamper = src[l++];
+    dst->Bumper = src[l++];
 
 	int i;
 	for(i=0; i<MOTORS_COUNT; i++) {

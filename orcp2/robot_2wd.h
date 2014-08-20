@@ -20,7 +20,7 @@
 #define BAMPER_2 2
 
 typedef struct Robot_2WD {
-	uint8_t 	Bamper;
+    uint8_t 	Bumper;
 	int16_t 	PWM [MOTORS_COUNT];
 	uint32_t 	US [ULTRASONIC_COUNT];
 	uint32_t 	IR [INFRARED_COUNT];
