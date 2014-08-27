@@ -65,7 +65,7 @@
 	  <!-- sensors data -->
 	  <div class="page-header">
         <h1>Sensors</h1>
-		<p><button type="button" class="btn btn-xs btn-success">&nbsp;</button>&nbsp; <button type="button" class="btn btn-xs btn-warning">&nbsp;</button></p>
+		<!-- <p><button type="button" class="btn btn-xs btn-success">&nbsp;</button>&nbsp; <button type="button" class="btn btn-xs btn-warning">&nbsp;</button></p>  -->
       </div>
       <div class="progress">
         <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"><span class="sr-only">60% Complete</span></div>
@@ -75,6 +75,23 @@
         <div class="progress-bar progress-bar-warning" style="width: 34%"><span class="sr-only">34% Complete (warning)</span></div>
         <div class="progress-bar progress-bar-danger" style="width: 33%"><span class='sr-only'>33% Complete (danger)</span></div>
       </div>
+	  
+	<p>
+		<span>
+			<table>
+				<tbody class="mytable">
+					<tr>
+						<td class="info"><b>Link:</b></td>
+						<td><div class="ajaxled" id="ajax_data_get"></div></td>
+						<td><div class="ajaxled" id="ajax_data_resp"></div></td>
+					</tr>
+				</tbody>
+			</table>
+		</span>
+		<span>
+		<div id="error_message"></div>
+		</span>
+	</p>
 	  
 	  <!-- Site footer -->
       <div class="footer">
@@ -87,7 +104,50 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> -->
+	<script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+	
+	<script type="text/javascript">
+	$(function () {	
+		function getData() {
+			//if( console && console.log ) console.log("getData");
+			$("#error_message").html(".");
+			$("#ajax_data_get").toggleClass('green');
+			$("#ajax_data_resp").removeClass("orange");
+			$.ajax({
+			//url: "cgi-bin/ajax_telem",
+			url: "cgi-bin/telem",
+			method: 'GET',
+			dataType: 'json',
+			data: {get : 'telemetry'}
+			}).done(function ( json ) {
+				$("#ajax_data_resp").toggleClass('orange');
+				//if( console && console.log ) console.log(json);
+				if(json.error && json.error_message){
+					$("#error_message").html(json.error_message);
+				}
+				else{
+					//
+				}
+			});
+		}
+
+		var updateInterval = 1000;
+
+		function update() {
+			getData();
+			//$("#heading_value").html(heading);
+			
+			//$("#ajax_data_get").removeClass("green");
+			//$("#ajax_data_resp").removeClass("orange");
+			
+			setTimeout(update, updateInterval);
+		}
+
+		update();
+	});
+	</script>	
+	
   </body>
 </html>
