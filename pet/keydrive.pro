@@ -22,7 +22,9 @@ SOURCES += keydrive.cpp \
     ../lib/network.cpp \
     ../lib/roboipc.cpp \
     ../lib/serial.cpp \
-    ../lib/times.cpp
+    ../lib/times.cpp \
+    ../lib/mutex.cpp \
+    ../lib/thread.cpp
 
 HEADERS  += commands.h \
     pet.h \
@@ -38,7 +40,9 @@ HEADERS  += commands.h \
     ../lib/stream.h \
     ../lib/times.h \
     ../lib/types.h \
-    ../lib/filtration.h
+    ../lib/filtration.h \
+    ../lib/mutex.h \
+    ../lib/thread.h
 
 #FORMS    += 
 
