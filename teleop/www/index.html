@@ -68,12 +68,12 @@
 		<!-- <p><button type="button" class="btn btn-xs btn-success">&nbsp;</button>&nbsp; <button type="button" class="btn btn-xs btn-warning">&nbsp;</button></p>  -->
       </div>
       <div class="progress">
-        <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 10%;"><span class="sr-only">60% Complete</span></div>
+        <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 10%;" id="telem_us_bar"><span class="sr-only">60% Complete</span></div>
       </div>
 	  <div class="progress">
-        <div class="progress-bar progress-bar-success" style="width: 33%"><span class="sr-only">33% Complete (success)</span></div>
-        <div class="progress-bar progress-bar-warning" style="width: 34%"><span class="sr-only">34% Complete (warning)</span></div>
-        <div class="progress-bar progress-bar-danger" style="width: 33%"><span class='sr-only'>33% Complete (danger)</span></div>
+        <div class="progress-bar progress-bar-success" style="width: 33%" id="telem_bumper_left_bar"><span class="sr-only">33% Complete (success)</span></div>
+        <div class="progress-bar progress-bar-warning" style="width: 34%" id="telem_bumper_center_bar"><span class="sr-only">34% Complete (warning)</span></div>
+        <div class="progress-bar progress-bar-danger" style="width: 33%" id="telem_bumper_right_bar"><span class='sr-only'>33% Complete (danger)</span></div>
       </div>
 	  
 	<p>
@@ -128,7 +128,46 @@
 					$("#error_message").html(json.error_message);
 				}
 				else{
-					//
+					//if( console && console.log ) console.log(json.us);
+					$("#telem_us_bar").css("width", json.us + "%");
+					
+					$("#telem_us_bar").removeClass("progress-bar-warning");
+					$("#telem_us_bar").removeClass("progress-bar-danger");
+					$("#telem_us_bar").removeClass("progress-bar-striped");
+					if(json.us > 100) {
+						$("#telem_us_bar").addClass("progress-bar-striped");
+					}
+					if(json.us < 60) {
+						$("#telem_us_bar").addClass("progress-bar-warning");
+					}
+					if(json.us < 40) {
+						$("#telem_us_bar").removeClass("progress-bar-warning").addClass("progress-bar-danger");
+					}
+					
+					$("#telem_bumper_left_bar").removeClass("progress-bar-danger");
+					$("#telem_bumper_center_bar").removeClass("progress-bar-danger");
+					$("#telem_bumper_right_bar").removeClass("progress-bar-danger");
+					
+					if(json.bamper == 0) {
+						$("#telem_bumper_left_bar").addClass("progress-bar-success");
+						$("#telem_bumper_center_bar").addClass("progress-bar-warning");
+						$("#telem_bumper_right_bar").addClass("progress-bar-success");
+					}
+					else if(json.bamper == 1) {
+						$("#telem_bumper_left_bar").removeClass("progress-bar-success").addClass("progress-bar-danger");
+						$("#telem_bumper_center_bar").addClass("progress-bar-warning");
+						$("#telem_bumper_right_bar").addClass("progress-bar-success");
+					}
+					else if(json.bamper == 2) {
+						$("#telem_bumper_left_bar").addClass("progress-bar-success");
+						$("#telem_bumper_center_bar").addClass("progress-bar-warning");
+						$("#telem_bumper_right_bar").removeClass("progress-bar-success").addClass("progress-bar-danger");
+					}
+					else if(json.bamper == 3) {
+						$("#telem_bumper_left_bar").removeClass("progress-bar-success").addClass("progress-bar-danger");
+						$("#telem_bumper_center_bar").removeClass("progress-bar-warning").addClass("progress-bar-danger");
+						$("#telem_bumper_right_bar").removeClass("progress-bar-success").addClass("progress-bar-danger");
+					}
 				}
 			});
 		}
