@@ -59,7 +59,11 @@
 	  
 	  <!-- image -->
 	  <div align="center">
-		<img src="http://192.168.0.14:8080/?action=stream" width="640" height="480" />
+		<script type="text/javascript">
+             document.write("<img alt='Camera' src='http://" + document.location.host + ":8080/?action=stream' width='640' height='480' />");
+        </script>
+			
+		<!-- <img src="http://192.168.0.14:8080/?action=stream" width="640" height="480" /> -->
 	  </div>
 	  
 	  <!-- sensors data -->
@@ -109,21 +113,24 @@
     <script src="js/bootstrap.min.js"></script>
 	
 	<script type="text/javascript">
-	$(function () {	
-		function getData() {
-			//if( console && console.log ) console.log("getData");
-			$("#error_message").html(".");
-			$("#ajax_data_get").toggleClass('green');
-			$("#ajax_data_resp").removeClass("orange");
-			$.ajax({
-			//url: "cgi-bin/ajax_telem",
-			url: "cgi-bin/telem",
+	
+	function sendAjaxRequest_Make(message) {
+		if( console && console.log ) console.log(message);
+		
+		$("#error_message").html("&nbsp;");
+		$("#ajax_data_get").toggleClass('green');
+		$("#ajax_data_resp").removeClass("orange");
+		
+		$.ajax({
+			url: "cgi-bin/ajax_make",
+			//url: "cgi-bin/telem",
 			method: 'GET',
 			dataType: 'json',
-			data: {get : 'telemetry'}
+			data: {msg : message}
 			}).done(function ( json ) {
+				if( console && console.log ) console.log(json);
 				$("#ajax_data_resp").toggleClass('orange');
-				//if( console && console.log ) console.log(json);
+				
 				if(json.error && json.error_message){
 					$("#error_message").html(json.error_message);
 				}
@@ -170,22 +177,41 @@
 					}
 				}
 			});
-		}
-
+	};
+	
+	$(function () {	
 		var updateInterval = 1000;
 
 		function update() {
-			getData();
-			//$("#heading_value").html(heading);
-			
-			//$("#ajax_data_get").removeClass("green");
-			//$("#ajax_data_resp").removeClass("orange");
-			
+			sendAjaxRequest_Make();
 			setTimeout(update, updateInterval);
 		}
 
 		update();
 	});
+	
+	$(document).keypress(function(event) {
+		if( console && console.log ) console.log('Handler for .keypress() called. - ' + event.charCode);
+		var keychar = String.fromCharCode(event.charCode);
+		
+		if(keychar == "w" || keychar == "Ж" || keychar == "W" || keychar == "ж") sendAjaxRequest_Make("forward");
+        if(keychar == "a" || keychar == "Т" || keychar == "A" || keychar == "т") sendAjaxRequest_Make("left");
+        if(keychar == "s" || keychar == "Ш" || keychar == "S" || keychar == "ш") sendAjaxRequest_Make("back");
+        if(keychar == "d" || keychar == "Б" || keychar == "D" || keychar == "б") sendAjaxRequest_Make("right");
+		
+	});
+	
+	$(document).keyup(function(event) {
+		if( console && console.log ) console.log('Handler for .keyup() called. - ' + event.keyCode);
+		var keychar = String.fromCharCode(event.keyCode);
+		
+		if(keychar == "w" || keychar == "Ж" || keychar == "W" || keychar == "ж") sendAjaxRequest_Make("stop");
+        if(keychar == "a" || keychar == "Т" || keychar == "A" || keychar == "т") sendAjaxRequest_Make("stop");
+        if(keychar == "s" || keychar == "Ш" || keychar == "S" || keychar == "ш") sendAjaxRequest_Make("stop");
+        if(keychar == "d" || keychar == "Б" || keychar == "D" || keychar == "б") sendAjaxRequest_Make("stop");
+		
+	});
+	
 	</script>	
 	
   </body>
