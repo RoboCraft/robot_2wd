@@ -114,8 +114,8 @@
 	
 	<script type="text/javascript">
 	
-	function sendAjaxRequest_Make(message) {
-		if( console && console.log ) console.log(message);
+	function sendAjaxRequest_Make(command) {
+		if( console && console.log ) console.log(command);
 		
 		$("#error_message").html("&nbsp;");
 		$("#ajax_data_get").toggleClass('green');
@@ -126,15 +126,16 @@
 			//url: "cgi-bin/telem",
 			method: 'GET',
 			dataType: 'json',
-			data: {msg : message}
+			data: {cmd : command}
 			}).done(function ( json ) {
 				if( console && console.log ) console.log(json);
+				
 				$("#ajax_data_resp").toggleClass('orange');
 				
-				if(json.error && json.error_message){
+				if(json.error && json.error_message) {
 					$("#error_message").html(json.error_message);
 				}
-				else{
+				else {
 					//if( console && console.log ) console.log(json.us);
 					$("#telem_us_bar").css("width", json.us + "%");
 					
@@ -183,7 +184,7 @@
 		var updateInterval = 1000;
 
 		function update() {
-			sendAjaxRequest_Make();
+			sendAjaxRequest_Make("telem");
 			setTimeout(update, updateInterval);
 		}
 

@@ -67,18 +67,20 @@ int main(int argc, char* argv[])
     char error_message[BUF_SIZE] = {0};
     int error_message_size = 0;
 
-    roboipc::CommunicatorClient teleoperation;
-    if( teleoperation.connect(TELEOPERATION_SOCKET_NAME) ) {
-        fprintf(stderr, "[!] Error: cant create communication: %s!\n", TELEOPERATION_SOCKET_NAME);
-        //return -1;
-    }
-
     char* request_method = getenv("REQUEST_METHOD");
     char* content_type = getenv("CONTENT_TYPE");
     char* content_length = getenv("CONTENT_LENGTH");
     char* query_string = getenv("QUERY_STRING");
 
-#if 1
+    roboipc::CommunicatorClient teleoperation;
+    if( teleoperation.connect(TELEOPERATION_SOCKET_NAME) ) {
+        fprintf(stderr, "[!] Error: cant create communication: %s!\n", TELEOPERATION_SOCKET_NAME);
+        error_code = 1;
+        error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant create communication: %s!\n", TELEOPERATION_SOCKET_NAME);
+        goto exit;
+    }
+
+#if 0
     //printf("Content-Type:text/html\n\n");
 
     //printf("[i] Parse data...\n");
@@ -99,18 +101,40 @@ int main(int argc, char* argv[])
     }
 #endif
 
+#if 0
+    FILE * pFile = 0;
+    pFile = fopen ("/var/www/cgi-bin/ajaxlog.txt", "a");
+    if(pFile) {
+        fprintf(pFile, "%s\n", request_method);
+        fprintf(pFile, "%s\n", content_type);
+        fprintf(pFile, "%s\n", content_length);
+        fprintf(pFile, "%s\n", query_string);
+        fclose (pFile);
+    }
+#endif
+
     if(!query_string) {
         error_code = 1;
         error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant get QUERY_STRING!");
         goto exit;
     }
 
-    if(teleoperation.sockfd != SOCKET_ERROR) {
+    if(query_string && teleoperation.sockfd != SOCKET_ERROR) {
         res = teleoperation.write(query_string, strlen(query_string));
     }
+    else {
+        error_code = 1;
+        error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant connect to teleoperation!");
+        goto exit;
+    }
 
-    if(teleoperation.available(50)) {
+    if(teleoperation.available(100)) {
         message_size = teleoperation.read(message, sizeof(message));
+    }
+    else {
+        error_code = 1;
+        error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant get data from teleoperation!");
+        goto exit;
     }
 
 exit:

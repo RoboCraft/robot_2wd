@@ -117,7 +117,7 @@ public:
                                cmd_telemetry_2wd.Bumper,
                                cmd_telemetry_2wd.US,
                                cmd_telemetry_2wd.IR[0], cmd_telemetry_2wd.IR[1],
-                                cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
+                               cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
                     }
                 }
             }
