@@ -99,6 +99,8 @@ public:
         blink_time = 0;
         blink_counter = 0;
 
+        speed = 70;
+
         return 0;
     }
 
@@ -134,51 +136,50 @@ public:
             client.sockfd = sockfd;
         }
 
-        if(client.available(50) > 0) {
+        if(client.available(100) > 0) {
             printf("[i] Client action...\n");
             if( (cmd_buf_size = client.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
                 printf("[i] Data size: %d\n", cmd_buf_size);
 
-                if(!strncmp(cmd_buf, "forward", sizeof(cmd_buf))) {
+                // skip "cmd="
+                if(!strncmp(cmd_buf+4, "forward", sizeof(cmd_buf))) {
                     forward(speed);
                 }
-                else if(!strncmp(cmd_buf, "back", sizeof(cmd_buf))) {
+                else if(!strncmp(cmd_buf+4, "back", sizeof(cmd_buf))) {
                     backward(speed);
                 }
-                else if(!strncmp(cmd_buf, "left", sizeof(cmd_buf))) {
+                else if(!strncmp(cmd_buf+4, "left", sizeof(cmd_buf))) {
                     left(speed);
                 }
-                else if(!strncmp(cmd_buf, "right", sizeof(cmd_buf))) {
+                else if(!strncmp(cmd_buf+4, "right", sizeof(cmd_buf))) {
                     right(speed);
                 }
-                else if(!strncmp(cmd_buf, "stop", sizeof(cmd_buf))) {
+                else if(!strncmp(cmd_buf+4, "stop", sizeof(cmd_buf))) {
                     stop();
-                }
-
-                printf("[i] Send telemetry...\n");
-                if(client.sockfd != SOCKET_ERROR) {
-                    //answer_buf
-
-                    answer_buf_size = snprintf(answer_buf, sizeof(answer_buf)-1,
-                        "{ \"bamper\" : %d,  \"us\" : %d, \"ir0\" : %d, \"ir1\" : %d, \"pwm0\" : %d, \"pwm1\" : %d,  \"voltage\" : %d}",
-                            cmd_telemetry_2wd.Bumper,
-                            cmd_telemetry_2wd.US,
-                            cmd_telemetry_2wd.IR[0], cmd_telemetry_2wd.IR[1],
-                            cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1],
-                            cmd_telemetry_2wd.Voltage );
-
-                    if(answer_buf_size > 0) {
-                        res = client.write(&answer_buf, answer_buf_size);
-                        printf("[i] Send telemetry (%d)...\n", res);
-                    }
-                    else {
-                        fprintf(stderr, "[!] Error: make message!\n");
-                    }
                 }
             }
             else {
                 printf("[i] Connection closed...\n");
                 client.close();
+            }
+
+            printf("[i] Send telemetry...\n");
+            if(client.sockfd != SOCKET_ERROR) {
+                answer_buf_size = snprintf(answer_buf, sizeof(answer_buf)-1,
+                        "{ \"bamper\" : %d,  \"us\" : %d, \"ir0\" : %d, \"ir1\" : %d, \"pwm0\" : %d, \"pwm1\" : %d,  \"voltage\" : %d}",
+                        cmd_telemetry_2wd.Bumper,
+                        cmd_telemetry_2wd.US,
+                        cmd_telemetry_2wd.IR[0], cmd_telemetry_2wd.IR[1],
+                        cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1],
+                        cmd_telemetry_2wd.Voltage);
+
+                if(answer_buf_size > 0) {
+                    res = client.write(&answer_buf, answer_buf_size);
+                    printf("[i] Send telemetry (%d)...\n", res);
+                }
+                else {
+                    fprintf(stderr, "[!] Error: make message!\n");
+                }
             }
         }
 

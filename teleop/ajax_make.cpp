@@ -22,6 +22,8 @@
 # include <signal.h>
 #endif
 
+#include <errno.h>
+
 #define BUF_SIZE 1024
 
 #if defined(LINUX)
@@ -74,9 +76,9 @@ int main(int argc, char* argv[])
 
     roboipc::CommunicatorClient teleoperation;
     if( teleoperation.connect(TELEOPERATION_SOCKET_NAME) ) {
-        fprintf(stderr, "[!] Error: cant create communication: %s!\n", TELEOPERATION_SOCKET_NAME);
+        fprintf(stderr, "[!] Error: cant create communication: %s! (%s)\n", TELEOPERATION_SOCKET_NAME, strerror(errno));
         error_code = 1;
-        error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant create communication: %s!\n", TELEOPERATION_SOCKET_NAME);
+        error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant create communication: %s! (%s)", TELEOPERATION_SOCKET_NAME, strerror(errno));
         goto exit;
     }
 
@@ -97,7 +99,7 @@ int main(int argc, char* argv[])
         printf("%s\n", query_string);
     }
     else {
-        fprintf(stderr, "[!] Error: cant get QUERY_STRING!\n");
+        //fprintf(stderr, "[!] Error: cant get QUERY_STRING!\n");
     }
 #endif
 
@@ -114,13 +116,15 @@ int main(int argc, char* argv[])
 #endif
 
     if(!query_string) {
-        error_code = 1;
-        error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant get QUERY_STRING!");
-        goto exit;
+        //error_code = 1;
+        //error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant get QUERY_STRING!");
+        //goto exit;
     }
 
-    if(query_string && teleoperation.sockfd != SOCKET_ERROR) {
-        res = teleoperation.write(query_string, strlen(query_string));
+    if(teleoperation.sockfd != SOCKET_ERROR) {
+        if(query_string) {
+            res = teleoperation.write(query_string, strlen(query_string));
+        }
     }
     else {
         error_code = 1;

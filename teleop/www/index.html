@@ -93,7 +93,7 @@
 			</table>
 		</span>
 		<span>
-		<div id="error_message"></div>
+		<div id="error_message" class="alert alert-danger" role="alert"></div>
 		</span>
 	</p>
 	  
@@ -118,6 +118,8 @@
 		if( console && console.log ) console.log(command);
 		
 		$("#error_message").html("&nbsp;");
+		$("#error_message").removeClass("alert-danger");
+		$("#error_message").data("role", "");
 		$("#ajax_data_get").toggleClass('green');
 		$("#ajax_data_resp").removeClass("orange");
 		
@@ -132,7 +134,9 @@
 				
 				$("#ajax_data_resp").toggleClass('orange');
 				
-				if(json.error && json.error_message) {
+				if(json.error) {
+					$("#error_message").addClass("alert-danger");
+					$("#error_message").data("role", "alert");
 					$("#error_message").html(json.error_message);
 				}
 				else {
@@ -181,7 +185,7 @@
 	};
 	
 	$(function () {	
-		var updateInterval = 1000;
+		var updateInterval = 200;
 
 		function update() {
 			sendAjaxRequest_Make("telem");
