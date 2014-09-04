@@ -114,14 +114,22 @@
 	
 	<script type="text/javascript">
 	
+	var is_manual_request_sended = 0;
+	var is_get_request_answer = 1;
+	
 	function sendAjaxRequest_Make(command) {
 		if( console && console.log ) console.log(command);
+		
+		if(is_get_request_answer == 0)
+			return;
 		
 		$("#error_message").html("&nbsp;");
 		$("#error_message").removeClass("alert-danger");
 		$("#error_message").data("role", "");
 		$("#ajax_data_get").toggleClass('green');
 		$("#ajax_data_resp").removeClass("orange");
+		
+		is_get_request_answer = 0;
 		
 		$.ajax({
 			url: "cgi-bin/ajax_make",
@@ -130,6 +138,7 @@
 			dataType: 'json',
 			data: {cmd : command}
 			}).done(function ( json ) {
+				is_get_request_answer = 1;
 				if( console && console.log ) console.log(json);
 				
 				$("#ajax_data_resp").toggleClass('orange');
@@ -190,7 +199,9 @@
 		var updateInterval = 200;
 
 		function update() {
-			sendAjaxRequest_Make("telem");
+			if(is_manual_request_sended == 0) {
+				sendAjaxRequest_Make("telem");
+			}
 			setTimeout(update, updateInterval);
 		}
 
@@ -201,11 +212,11 @@
 		if( console && console.log ) console.log('Handler for .keypress() called. - ' + event.charCode);
 		var keychar = String.fromCharCode(event.charCode);
 		
+		is_manual_request_sended = 1;
 		if(keychar == "w" || keychar == "Ж" || keychar == "W" || keychar == "ж") sendAjaxRequest_Make("forward");
         if(keychar == "a" || keychar == "Т" || keychar == "A" || keychar == "т") sendAjaxRequest_Make("left");
         if(keychar == "s" || keychar == "Ш" || keychar == "S" || keychar == "ш") sendAjaxRequest_Make("back");
         if(keychar == "d" || keychar == "Б" || keychar == "D" || keychar == "б") sendAjaxRequest_Make("right");
-		
 	});
 	
 	$(document).keyup(function(event) {
@@ -216,7 +227,7 @@
         if(keychar == "a" || keychar == "Т" || keychar == "A" || keychar == "т") sendAjaxRequest_Make("stop");
         if(keychar == "s" || keychar == "Ш" || keychar == "S" || keychar == "ш") sendAjaxRequest_Make("stop");
         if(keychar == "d" || keychar == "Б" || keychar == "D" || keychar == "б") sendAjaxRequest_Make("stop");
-		
+		is_manual_request_sended = 0;
 	});
 	
 	</script>	
