@@ -22,6 +22,7 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <signal.h>
+# include <sys/stat.h> // chmod()
 #endif
 
 #define BUF_SIZE 1024
@@ -82,6 +83,12 @@ public:
 
         if( communicator.init(TELEOPERATION_SOCKET_NAME) ) {
             fprintf(stderr, "[!] Error: cant create communication: %s!\n", TELEOPERATION_SOCKET_NAME);
+            return -1;
+        }
+
+        // for ajax connection (chmod 777)
+        if( chmod(TELEOPERATION_SOCKET_NAME, S_IRWXU|S_IRWXG|S_IRWXO) ) {
+            fprintf(stderr, "[!] Error: cant set permissions for: %s!\n", TELEOPERATION_SOCKET_NAME);
             return -1;
         }
 

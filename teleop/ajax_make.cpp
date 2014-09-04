@@ -20,9 +20,8 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <signal.h>
+# include <errno.h>
 #endif
-
-#include <errno.h>
 
 #define BUF_SIZE 1024
 
@@ -76,9 +75,14 @@ int main(int argc, char* argv[])
 
     roboipc::CommunicatorClient teleoperation;
     if( teleoperation.connect(TELEOPERATION_SOCKET_NAME) ) {
-        fprintf(stderr, "[!] Error: cant create communication: %s! (%s)\n", TELEOPERATION_SOCKET_NAME, strerror(errno));
         error_code = 1;
+#if defined(LINUX)
+        fprintf(stderr, "[!] Error: cant create communication: %s! (%s)\n", TELEOPERATION_SOCKET_NAME, strerror(errno));
         error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant create communication: %s! (%s)", TELEOPERATION_SOCKET_NAME, strerror(errno));
+#else
+        fprintf(stderr, "[!] Error: cant create communication: %s!\n");
+        error_message_size = snprintf(error_message, BUF_SIZE, "[!] error: cant create communication: %s!", TELEOPERATION_SOCKET_NAME);
+#endif
         goto exit;
     }
 
