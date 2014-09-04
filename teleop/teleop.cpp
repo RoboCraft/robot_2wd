@@ -86,11 +86,13 @@ public:
             return -1;
         }
 
+#if defined(LINUX)
         // for ajax connection (chmod 777)
         if( chmod(TELEOPERATION_SOCKET_NAME, S_IRWXU|S_IRWXG|S_IRWXO) ) {
             fprintf(stderr, "[!] Error: cant set permissions for: %s!\n", TELEOPERATION_SOCKET_NAME);
             return -1;
         }
+#endif
 
         memset(&cmd_drive_2wd, 0, sizeof(cmd_drive_2wd));
         memset(&cmd_telemetry_2wd, 0, sizeof(cmd_telemetry_2wd));
@@ -127,6 +129,13 @@ public:
                                cmd_telemetry_2wd.US,
                                cmd_telemetry_2wd.IR[0], cmd_telemetry_2wd.IR[1],
                                cmd_telemetry_2wd.pwm[0], cmd_telemetry_2wd.pwm[1]);
+
+                        if( cmd_telemetry_2wd.Bumper &&
+                            state != ST_STOP &&
+                            state != ST_MOVE_BACKWARD) {
+                                state = ST_STOP;
+                                stop();
+                        }
                     }
                 }
             }
@@ -146,28 +155,53 @@ public:
         if(client.available(100) > 0) {
             printf("[i] Client action...\n");
             if( (cmd_buf_size = client.read(cmd_buf, sizeof(cmd_buf)))>0 ) {
-                printf("[i] Data size: %d\n", cmd_buf_size);
+                cmd_buf[cmd_buf_size] = 0;
+                printf("[i] Data (%d): %s\n", cmd_buf_size, cmd_buf);
 
-                // skip "cmd="
-                if(!strncmp(cmd_buf+4, "forward", sizeof(cmd_buf))) {
-                    forward(speed);
+                int buf_shift = 4; // skip "cmd="
+                if(cmd_buf_size > buf_shift) {
+                    if(!strncmp(cmd_buf+buf_shift, "forward", cmd_buf_size-buf_shift)) {
+                        if(!cmd_telemetry_2wd.Bumper) {
+                            state = ST_MOVE_FORWARD;
+                        }
+                        else {
+                            state = ST_STOP;
+                        }
+                    }
+                    else if(!strncmp(cmd_buf+buf_shift, "back", cmd_buf_size-buf_shift)) {
+                        state = ST_MOVE_BACKWARD;
+                    }
+                    else if(!strncmp(cmd_buf+buf_shift, "left", cmd_buf_size-buf_shift)) {
+                        if(!cmd_telemetry_2wd.Bumper) {
+                            state = ST_MOVE_LEFT;
+                        }
+                        else {
+                            state = ST_STOP;
+                        }
+                    }
+                    else if(!strncmp(cmd_buf+buf_shift, "right", cmd_buf_size-buf_shift)) {
+                        if(!cmd_telemetry_2wd.Bumper) {
+                            state = ST_MOVE_RIGHT;
+                        }
+                        else {
+                            state = ST_STOP;
+                        }
+                    }
+                    else if(!strncmp(cmd_buf+buf_shift, "stop", cmd_buf_size-buf_shift)) {
+                        state = ST_STOP;
+                    }
+                    else {
+                        //state = ST_STOP;
+                    }
                 }
-                else if(!strncmp(cmd_buf+4, "back", sizeof(cmd_buf))) {
-                    backward(speed);
-                }
-                else if(!strncmp(cmd_buf+4, "left", sizeof(cmd_buf))) {
-                    left(speed);
-                }
-                else if(!strncmp(cmd_buf+4, "right", sizeof(cmd_buf))) {
-                    right(speed);
-                }
-                else if(!strncmp(cmd_buf+4, "stop", sizeof(cmd_buf))) {
-                    stop();
+                else {
+                    state = ST_STOP;
                 }
             }
             else {
                 printf("[i] Connection closed...\n");
                 client.close();
+                state = ST_STOP;
             }
 
             printf("[i] Send telemetry...\n");
@@ -188,6 +222,25 @@ public:
                     fprintf(stderr, "[!] Error: make message!\n");
                 }
             }
+        }
+
+        switch (state) {
+        case ST_MOVE_FORWARD:
+            forward(speed);
+            break;
+        case ST_MOVE_BACKWARD:
+            backward(speed);
+            break;
+        case ST_MOVE_LEFT:
+            left(speed);
+            break;
+        case ST_MOVE_RIGHT:
+            right(speed);
+            break;
+        case ST_STOP:
+        default:
+            stop();
+            break;
         }
 
         return 0;

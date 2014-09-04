@@ -138,6 +138,8 @@
 					$("#error_message").addClass("alert-danger");
 					$("#error_message").data("role", "alert");
 					$("#error_message").html(json.error_message);
+					
+					$("#telem_us_bar").css("width", "0%");
 				}
 				else {
 					//if( console && console.log ) console.log(json.us);
