@@ -81,6 +81,7 @@ String window_name = "Capture - Face detection";
 
 int counter=0;
 char filename[512] = {0};
+int face_counter = 0;
 
 int main( void )
 {
@@ -88,6 +89,8 @@ int main( void )
     Mat frame;
 
     printf("[i] Start...\n");
+
+    srand( time( 0 ) );
 
     register_signal_handlers();
 
@@ -137,21 +140,33 @@ int main( void )
         //-- 3. Apply the classifier to the frame
         res = detectAndDisplay( frame );
         if( res ) {
+            face_counter++;
             printf("[i] Play woof!\n");
 
-            if(is_speech_end && speecher.sockfd != SOCKET_ERROR) {
+            if(is_speech_end && speecher.sockfd != SOCKET_ERROR
+               && (res == 2 || face_counter>2)) {
                 is_speech_end = false;
 
                 strncpy(cmd_speech.sig, "speech", CMD_SIG_SIZE);
                 cmd_speech.code = 0;
+
                 strncpy(cmd_speech.name, SOUND_FOR_DETECTION, sizeof(cmd_speech.name));
+                if( (rand() % 10 + 1) < 7 ) { strncpy(cmd_speech.name, SOUND_FOR_DETECTION2, sizeof(cmd_speech.name));}
+                if( (rand() % 10 + 1) < 4 ) { strncpy(cmd_speech.name, SOUND_FOR_INFO, sizeof(cmd_speech.name));}
                 if(res == 2) {
                     strncpy(cmd_speech.name, SOUND_FOR_NEAR, sizeof(cmd_speech.name));
+                    if( (rand() % 10 + 1) < 8 ) { strncpy(cmd_speech.name, SOUND_FOR_NEAR2, sizeof(cmd_speech.name));}
                 }
 
                 res = speecher.write(&cmd_speech, sizeof(cmd_speech));
                 printf("[i] Send speech command (%d)...\n", res);
                 printf("[i] Data: %d %s\n", cmd_speech.code, cmd_speech.name);
+            }
+        }
+        else {
+            face_counter--;
+            if(face_counter < 0) {
+                face_counter = 0;
             }
         }
 
