@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
                             printf("[i] play file: %s\n", filename);
 
                             //return_value = execl("/usr/bin/aplay", "aplay", "./snd/dog_woof.wav");
-                            return_value = execl("/usr/bin/aplay", "aplay", filename, 0);
+                            return_value = execl("/usr/bin/aplay", "aplay", filename, "-D", "default:CARD=ALSA", 0); //return_value = execl("/usr/bin/aplay", "aplay", filename, 0);
                             return return_value;
                         }
                         else {

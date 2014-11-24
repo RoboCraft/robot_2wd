@@ -20,7 +20,7 @@ TARGETS	:= $(patsubst %.o, %, $(OBJECTSCPP))
 ADDOBJECTS := pet.o
 
 OPENCVFLAGS	:= -DUSEOPENCV=1 -I/usr/include/opencv -L/usr/lib -Wl,-rpath,/usr/lib
-OPENCVLIBRARIES := -lopencv_core -lopencv_imgproc -lopencv_highgui
+OPENCVLIBRARIES := -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video -lopencv_objdetect
 
 CFLAGS		:= -I. -I.. -I$(ORCPPATH) -I$(LIBPPATH) -DLINUX=1 
 
@@ -33,6 +33,10 @@ all: $(OBJECTSCPP)
 eye.o: eye.cpp
 	make -C $(LIBPPATH)
 	$(CC) $(CFLAGS) $(OBJECTS) $(OPENCVFLAGS) -o eye $< $(LIBRARIES) $(OPENCVLIBRARIES)
+
+face_detect_woof.o: face_detect_woof.cpp
+	make -C $(LIBPPATH)
+	$(CC) $(CFLAGS) $(OBJECTS) $(OPENCVFLAGS) -o face_detect_woof $< $(LIBRARIES) $(OPENCVLIBRARIES)	
 	
 pet.o: pet.cpp
 	make -C $(LIBPPATH)
