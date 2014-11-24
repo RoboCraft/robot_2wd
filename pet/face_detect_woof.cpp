@@ -198,7 +198,9 @@ int detectAndDisplay( Mat frame )
     face_cascade.detectMultiScale( frame_gray, faces, 1.1, 2, 0, Size(80, 80) );
 
     printf("[i] frame %d x %d detect faces: %d\n", frame.cols, frame.rows, faces.size());
-    res = 1;
+    if(faces.size()) {
+        res = 1;
+    }
 
     for( size_t i = 0; i < faces.size(); i++ ) {
         Mat faceROI = frame_gray( faces[i] );
